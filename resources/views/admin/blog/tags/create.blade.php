@@ -1,0 +1,1 @@
+<x-layouts::app :title="__('Add blog tag')"><div class="mx-auto w-full max-w-3xl p-4 sm:p-6 lg:p-8"><a href="{{ route('admin.blog.tags.index') }}" class="text-sm text-zinc-500">← Back to tags</a><h1 class="mt-3 text-2xl font-semibold dark:text-white">Add blog tag</h1>@include('admin.blog.tags._form', ['tag' => null])</div></x-layouts::app>
