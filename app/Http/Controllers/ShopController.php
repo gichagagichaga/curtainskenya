@@ -12,6 +12,10 @@ class ShopController extends Controller
     {
         $categories = Category::query()
             ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['children' => fn ($query) => $query->where('is_active', true)->withCount([
+                'products' => fn ($productQuery) => $productQuery->where('is_active', true),
+            ])])
             ->withCount([
                 'products' => fn ($query) => $query->where('is_active', true),
             ])
@@ -33,11 +37,19 @@ class ShopController extends Controller
 
         $categories = Category::query()
             ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['children' => fn ($query) => $query->where('is_active', true)])
             ->orderBy('sort_order')
             ->get();
 
-        $products = $category->products()
+        $categoryIds = $category->children()
+            ->where('is_active', true)
+            ->pluck('id')
+            ->push($category->id);
+
+        $products = Product::query()
             ->with(['category', 'images'])
+            ->whereIn('category_id', $categoryIds)
             ->where('is_active', true)
             ->latest()
             ->paginate(12);

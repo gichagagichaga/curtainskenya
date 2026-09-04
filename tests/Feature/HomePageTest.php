@@ -24,6 +24,14 @@ test('renders active categories and featured products on the home page', functio
         'is_active' => true,
     ]);
 
+    $subcategory = Category::create([
+        'name' => 'Sheer Curtains',
+        'slug' => 'sheer-curtains',
+        'parent_id' => $category->id,
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
     Product::create([
         'category_id' => $category->id,
         'name' => 'Archived Curtain',
@@ -38,6 +46,7 @@ test('renders active categories and featured products on the home page', functio
 
     $this->get(route('home'))
         ->assertSee($category->name)
+        ->assertSee($subcategory->name)
         ->assertSee($featuredProduct->name)
         ->assertSee(route('shop.category', $category), false)
         ->assertSee(route('shop.index'), false)

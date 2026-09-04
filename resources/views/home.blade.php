@@ -58,6 +58,9 @@
                     <div class="relative flex h-full flex-col justify-end p-6 text-white">
                         <span class="text-[0.6rem] font-medium tracking-[0.18em] text-white/75 uppercase">Collection</span>
                         <span class="mt-2 flex items-end justify-between font-serif text-3xl tracking-[-0.04em]">{{ $category->name }} <span class="translate-y-1 text-lg transition-transform group-hover:-translate-y-1">↗</span></span>
+                        @if ($category->children->isNotEmpty())
+                            <span class="mt-2 text-xs leading-5 text-white/80">{{ $category->children->pluck('name')->join(' · ') }}</span>
+                        @endif
                     </div>
                 </a>
             @endforeach

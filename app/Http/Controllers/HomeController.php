@@ -16,6 +16,8 @@ class HomeController extends Controller
     {
         $categories = Category::query()
             ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['children' => fn ($query) => $query->where('is_active', true)])
             ->orderBy('sort_order')
             ->get();
 

@@ -60,6 +60,18 @@
                     {{ $item->name }}
                 </a>
 
+                @foreach($item->children as $subcategory)
+                    <a
+                        href="{{ route('shop.category', $subcategory->slug) }}"
+                        class="whitespace-nowrap rounded-full border px-5 py-2.5 text-sm transition
+                        {{ $subcategory->id === $category->id
+                            ? 'border-[#29231e] bg-[#29231e] text-white'
+                            : 'border-[#ded5ca] bg-white text-[#4f453d] hover:border-[#8a6a4a] hover:text-[#8a6a4a]' }}"
+                    >
+                        {{ $item->name }} › {{ $subcategory->name }}
+                    </a>
+                @endforeach
+
             @endforeach
 
         </div>

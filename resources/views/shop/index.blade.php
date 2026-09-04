@@ -51,6 +51,16 @@
                         {{ $category->products_count }}
                     </span>
                 </a>
+
+                @foreach($category->children as $subcategory)
+                    <a
+                        href="{{ route('shop.category', $subcategory->slug) }}"
+                        class="whitespace-nowrap rounded-full border border-[#ded5ca] bg-white px-5 py-2.5 text-sm text-[#4f453d] transition hover:border-[#8a6a4a] hover:text-[#8a6a4a]"
+                    >
+                        {{ $category->name }} › {{ $subcategory->name }}
+                        <span class="ml-1 text-xs text-[#998d82]">{{ $subcategory->products_count }}</span>
+                    </a>
+                @endforeach
             @endforeach
         </div>
 

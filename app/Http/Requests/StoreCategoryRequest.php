@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCategoryRequest extends FormRequest
 {
@@ -12,12 +13,19 @@ class StoreCategoryRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::prohibitedIf(fn (): bool => $this->route('category')?->children()->exists() ?? false),
+                Rule::exists('categories', 'id')->whereNull('parent_id'),
+                Rule::notIn(array_filter([$this->route('category')?->getKey()])),
+            ],
             'description' => ['nullable', 'string'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
