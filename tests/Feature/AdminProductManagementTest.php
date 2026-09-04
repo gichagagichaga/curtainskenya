@@ -11,6 +11,18 @@ test('guests are redirected away from product management', function () {
     $this->get(route('admin.products.index'))->assertRedirect(route('login'));
 });
 
+test('product form groups active subcategories beneath their main category', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $subcategory = Category::create(['name' => 'Shower Curtains', 'slug' => 'shower-curtains', 'parent_id' => $category->id, 'is_active' => true]);
+
+    $this->actingAs($user)->get(route('admin.products.create'))
+        ->assertOk()
+        ->assertSee('<optgroup label="Curtains">', false)
+        ->assertSee('Shower Curtains')
+        ->assertSee('value="'.$subcategory->id.'"', false);
+});
+
 test('authenticated users can create a product with an image', function () {
     Storage::fake('public');
     $user = User::factory()->create();

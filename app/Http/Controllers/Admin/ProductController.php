@@ -166,8 +166,12 @@ class ProductController extends Controller
     private function categories(): array
     {
         return Category::query()
-            ->with('parent')
             ->where('is_active', true)
+            ->whereNull('parent_id')
+            ->with(['children' => fn ($query) => $query
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
