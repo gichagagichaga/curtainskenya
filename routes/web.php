@@ -79,6 +79,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('clients/{client}', [AdminClientController::class, 'update'])->middleware('role:content_manager')->name('clients.update');
         Route::delete('clients/{client}', [AdminClientController::class, 'destroy'])->middleware('role:content_manager')->name('clients.destroy');
         Route::resource('categories', AdminCategoryController::class)->middleware('role:catalogue_manager')->except('show');
+        Route::get('subcategories', [AdminCategoryController::class, 'subcategories'])->middleware('role:catalogue_manager')->name('subcategories.index');
+        Route::get('subcategories/create', [AdminCategoryController::class, 'createSubcategory'])->middleware('role:catalogue_manager')->name('subcategories.create');
+        Route::post('subcategories', [AdminCategoryController::class, 'storeSubcategory'])->middleware('role:catalogue_manager')->name('subcategories.store');
 
         Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])
             ->middleware('role:catalogue_manager')

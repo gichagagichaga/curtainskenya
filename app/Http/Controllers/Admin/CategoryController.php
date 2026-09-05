@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\StoreSubcategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,6 +26,38 @@ class CategoryController extends Controller
             ->paginate(15);
 
         return view('admin.categories.index', compact('categories'));
+    }
+
+    public function subcategories(): View
+    {
+        $subcategories = Category::query()
+            ->whereNotNull('parent_id')
+            ->with('parent')
+            ->withCount('products')
+            ->orderBy('parent_id')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->paginate(15);
+
+        return view('admin.subcategories.index', compact('subcategories'));
+    }
+
+    public function createSubcategory(): View
+    {
+        return view('admin.subcategories.create', [
+            'parentCategories' => $this->parentCategories(),
+        ]);
+    }
+
+    public function storeSubcategory(StoreSubcategoryRequest $request): RedirectResponse
+    {
+        $subcategory = Category::create($this->categoryData($request));
+
+        if ($request->hasFile('image')) {
+            $subcategory->update(['image' => $request->file('image')->store('categories', 'public')]);
+        }
+
+        return redirect()->route('admin.categories.edit', $subcategory)->with('status', 'Subcategory created successfully.');
     }
 
     /**

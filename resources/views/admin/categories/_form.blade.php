@@ -1,18 +1,19 @@
-<form method="POST" action="{{ $category ? route('admin.categories.update', $category) : route('admin.categories.store') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+@php($subcategoryMode = $subcategoryMode ?? false)
+<form method="POST" action="{{ $category ? route('admin.categories.update', $category) : ($subcategoryMode ? route('admin.subcategories.store') : route('admin.categories.store')) }}" enctype="multipart/form-data" class="mt-6 space-y-6">
     @csrf
     @if ($category) @method('PUT') @endif
 
     <div class="grid gap-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">
         <div>
-            <label for="name" class="text-sm font-medium text-zinc-900 dark:text-white">Category name</label>
+            <label for="name" class="text-sm font-medium text-zinc-900 dark:text-white">{{ $subcategoryMode ? 'Subcategory name' : 'Category name' }}</label>
             <input id="name" name="name" type="text" required value="{{ old('name', $category?->name) }}" class="mt-2 block w-full rounded-lg border-zinc-300 bg-white text-zinc-900 shadow-sm focus:border-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
             @error('name') <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
         </div>
 
         <div>
-            <label for="parent_id" class="text-sm font-medium text-zinc-900 dark:text-white">Parent category <span class="font-normal text-zinc-500">(optional)</span></label>
-            <select id="parent_id" name="parent_id" class="mt-2 block w-full rounded-lg border-zinc-300 bg-white text-zinc-900 shadow-sm focus:border-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
-                <option value="">None — make this a main category</option>
+            <label for="parent_id" class="text-sm font-medium text-zinc-900 dark:text-white">Parent category @unless($subcategoryMode)<span class="font-normal text-zinc-500">(optional)</span>@endunless</label>
+            <select id="parent_id" name="parent_id" @required($subcategoryMode) class="mt-2 block w-full rounded-lg border-zinc-300 bg-white text-zinc-900 shadow-sm focus:border-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
+                <option value="">{{ $subcategoryMode ? 'Select a main category' : 'None — make this a main category' }}</option>
                 @foreach ($parentCategories as $parentCategory)
                     <option value="{{ $parentCategory->id }}" @selected((string) old('parent_id', $category?->parent_id) === (string) $parentCategory->id)>{{ $parentCategory->name }}</option>
                 @endforeach
@@ -47,7 +48,7 @@
     </div>
 
     <div class="flex justify-end gap-3">
-        <a href="{{ route('admin.categories.index') }}" class="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">Cancel</a>
-        <button type="submit" class="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900">{{ $category ? 'Save changes' : 'Create category' }}</button>
+        <a href="{{ $subcategoryMode ? route('admin.subcategories.index') : route('admin.categories.index') }}" class="rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">Cancel</a>
+        <button type="submit" class="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900">{{ $category ? 'Save changes' : ($subcategoryMode ? 'Create subcategory' : 'Create category') }}</button>
     </div>
 </form>

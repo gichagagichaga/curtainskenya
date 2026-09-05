@@ -26,6 +26,9 @@
                     <flux:sidebar.item icon="folder-git-2" :href="route('admin.categories.index')" :current="request()->routeIs('admin.categories.*')" class="data-current:!bg-ck-blue data-current:!text-white data-current:hover:!bg-blue-700">
                         {{ __('Categories') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="rectangle-stack" :href="route('admin.subcategories.index')" :current="request()->routeIs('admin.subcategories.*')" class="data-current:!bg-ck-blue data-current:!text-white data-current:hover:!bg-blue-700">
+                        {{ __('Subcategories') }}
+                    </flux:sidebar.item>
                     @endif
                     @if(auth()->user()->hasRole(\App\Models\User::ROLE_CONTENT_MANAGER))
                     <flux:sidebar.item icon="book-open-text" :href="route('admin.blog.posts.index')" :current="request()->routeIs('admin.blog.*')" class="data-current:!bg-ck-blue data-current:!text-white data-current:hover:!bg-blue-700">

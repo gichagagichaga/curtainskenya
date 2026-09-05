@@ -55,6 +55,51 @@ test('authenticated users can create a subcategory', function () {
         ->and($parent->children()->whereKey($subcategory)->exists())->toBeTrue();
 });
 
+test('catalogue managers see the subcategory menu and management page', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $parent = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $subcategory = Category::create(['name' => 'Blackout Curtains', 'slug' => 'blackout-curtains', 'parent_id' => $parent->id, 'is_active' => true]);
+
+    $this->actingAs($user)->get(route('admin.subcategories.index'))
+        ->assertSee('Subcategories')
+        ->assertSee($subcategory->name)
+        ->assertSee($parent->name)
+        ->assertSee(route('admin.subcategories.create'), false);
+});
+
+test('the dedicated subcategory flow requires a parent category', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+
+    $this->actingAs($user)->from(route('admin.subcategories.create'))->post(route('admin.subcategories.store'), [
+        'name' => 'Sheer Curtains',
+        'sort_order' => 1,
+        'is_active' => true,
+    ])->assertRedirect(route('admin.subcategories.create'))->assertSessionHasErrors('parent_id');
+
+    $this->assertDatabaseMissing('categories', ['name' => 'Sheer Curtains']);
+});
+
+test('catalogue managers can create a subcategory from the dedicated flow', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $parent = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+
+    $response = $this->actingAs($user)->post(route('admin.subcategories.store'), [
+        'name' => 'Eyelet Curtains',
+        'parent_id' => $parent->id,
+        'sort_order' => 2,
+        'is_active' => true,
+    ]);
+
+    $subcategory = Category::where('name', 'Eyelet Curtains')->firstOrFail();
+
+    $response->assertRedirect(route('admin.categories.edit', $subcategory));
+    $this->assertDatabaseHas('categories', [
+        'id' => $subcategory->id,
+        'parent_id' => $parent->id,
+        'slug' => 'eyelet-curtains',
+    ]);
+});
+
 test('subcategories cannot be nested below other subcategories', function () {
     $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $parent = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
