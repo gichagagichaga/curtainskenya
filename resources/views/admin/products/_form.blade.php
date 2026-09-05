@@ -4,11 +4,12 @@
     <div class="grid gap-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:p-6 lg:grid-cols-2">
         <div class="lg:col-span-2"><label for="name" class="text-sm font-medium text-zinc-900 dark:text-white">Product name</label><input id="name" name="name" type="text" value="{{ old('name', $product?->name) }}" required class="mt-2 block w-full rounded-lg border-zinc-300 bg-white text-zinc-900 shadow-sm focus:border-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-white dark:focus:ring-white">@error('name')<p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>@enderror</div>
         @php
-            $selectedCategory = collect($categories)
-                ->flatMap(fn ($category) => $category->children->prepend($category))
-                ->firstWhere('id', (int) old('category_id', $product?->category_id));
-            $selectedParentId = (string) old('parent_category_id', $selectedCategory?->parent_id ?? $selectedCategory?->id);
             $selectedCategoryId = (string) old('category_id', $product?->category_id);
+            $selectedParent = collect($categories)->first(
+                fn ($category) => (string) $category->id === $selectedCategoryId
+                    || $category->children->contains(fn ($subcategory) => (string) $subcategory->id === $selectedCategoryId)
+            );
+            $selectedParentId = (string) old('parent_category_id', $selectedParent?->id);
         @endphp
         <div>
             <label for="parent_category_id" class="text-sm font-medium text-zinc-900 dark:text-white">Product category</label>
