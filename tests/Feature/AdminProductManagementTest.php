@@ -48,7 +48,7 @@ test('authenticated users can create a product with an image', function () {
 
     $response = $this->actingAs($user)->post(route('admin.products.store'), [
         'parent_category_id' => $category->id,
-        'category_id' => $category->id, 'name' => 'Linen Curtain Panel', 'sku' => 'CK-LIN-001',
+        'category_id' => $category->id, 'name' => 'Linen Curtain Panel', 'sku' => 'CK-LIN-001', 'color' => 'Ivory',
         'price' => '6500.00', 'sale_price' => '5900.00', 'stock_quantity' => 12,
         'is_featured' => true, 'is_active' => true,
         'images' => [UploadedFile::fake()->image('linen-curtain.jpg', 1200, 1600)],
@@ -56,7 +56,7 @@ test('authenticated users can create a product with an image', function () {
 
     $product = Product::where('sku', 'CK-LIN-001')->firstOrFail();
     $response->assertRedirect(route('admin.products.edit', $product));
-    $this->assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'linen-curtain-panel', 'is_featured' => true, 'is_active' => true]);
+    $this->assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'linen-curtain-panel', 'color' => 'Ivory', 'is_featured' => true, 'is_active' => true]);
     $image = ProductImage::where('product_id', $product->id)->firstOrFail();
     Storage::disk('public')->assertExists($image->image_path);
 });
@@ -127,6 +127,17 @@ test('the product edit screen includes a full-size image preview', function () {
         ->assertOk()
         ->assertSee('Click an image to enlarge')
         ->assertSee('Product image preview');
+});
+
+test('the product edit screen shows its saved color', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $product = Product::create(['category_id' => $category->id, 'name' => 'Velvet Curtain', 'slug' => 'velvet-curtain', 'color' => 'Burgundy', 'price' => 7200, 'stock_quantity' => 3, 'is_active' => true]);
+
+    $this->actingAs($user)->get(route('admin.products.edit', $product))
+        ->assertOk()
+        ->assertSee('Product color')
+        ->assertSee('value="Burgundy"', false);
 });
 
 test('deleting a product removes its uploaded images', function () {
