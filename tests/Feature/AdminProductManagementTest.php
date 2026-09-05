@@ -11,24 +11,43 @@ test('guests are redirected away from product management', function () {
     $this->get(route('admin.products.index'))->assertRedirect(route('login'));
 });
 
-test('product form groups active subcategories beneath their main category', function () {
+test('product form provides parent-filtered subcategory options', function () {
     $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
     $subcategory = Category::create(['name' => 'Shower Curtains', 'slug' => 'shower-curtains', 'parent_id' => $category->id, 'is_active' => true]);
 
     $this->actingAs($user)->get(route('admin.products.create'))
         ->assertOk()
-        ->assertSee('<optgroup label="Curtains">', false)
+        ->assertSee('Product category')
+        ->assertSee('Product subcategory')
         ->assertSee('Shower Curtains')
-        ->assertSee('value="'.$subcategory->id.'"', false);
+        ->assertSee('value="'.$subcategory->id.'" data-parent-id="'.$category->id.'"', false);
+});
+
+test('product validation rejects a subcategory from another parent category', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $curtains = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $bedding = Category::create(['name' => 'Bedding', 'slug' => 'bedding', 'is_active' => true]);
+    $subcategory = Category::create(['name' => 'Duvet Covers', 'slug' => 'duvet-covers', 'parent_id' => $bedding->id, 'is_active' => true]);
+
+    $this->actingAs($user)->post(route('admin.products.store'), [
+        'parent_category_id' => $curtains->id,
+        'category_id' => $subcategory->id,
+        'name' => 'Cotton Duvet',
+        'price' => '5000.00',
+        'stock_quantity' => 4,
+    ])->assertSessionHasErrors('category_id');
+
+    $this->assertDatabaseMissing('products', ['name' => 'Cotton Duvet']);
 });
 
 test('authenticated users can create a product with an image', function () {
     Storage::fake('public');
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
 
     $response = $this->actingAs($user)->post(route('admin.products.store'), [
+        'parent_category_id' => $category->id,
         'category_id' => $category->id, 'name' => 'Linen Curtain Panel', 'sku' => 'CK-LIN-001',
         'price' => '6500.00', 'sale_price' => '5900.00', 'stock_quantity' => 12,
         'is_featured' => true, 'is_active' => true,
@@ -43,16 +62,17 @@ test('authenticated users can create a product with an image', function () {
 });
 
 test('product validation rejects a sale price above its regular price', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Blinds', 'slug' => 'blinds', 'is_active' => true]);
 
     $this->actingAs($user)->from(route('admin.products.create'))->post(route('admin.products.store'), [
+        'parent_category_id' => $category->id,
         'category_id' => $category->id, 'name' => 'Roller Blind', 'price' => '2500.00', 'sale_price' => '3000.00', 'stock_quantity' => 2,
     ])->assertRedirect(route('admin.products.create'))->assertSessionHasErrors('sale_price');
 });
 
 test('authenticated users can adjust a product stock quantity from the product list', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Fabrics', 'slug' => 'fabrics', 'is_active' => true]);
     $product = Product::create(['category_id' => $category->id, 'name' => 'Linen Fabric', 'slug' => 'linen-fabric', 'price' => 1200, 'stock_quantity' => 3, 'is_active' => true]);
 
@@ -63,7 +83,7 @@ test('authenticated users can adjust a product stock quantity from the product l
 });
 
 test('product stock adjustment cannot be negative', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Fabrics', 'slug' => 'fabrics', 'is_active' => true]);
     $product = Product::create(['category_id' => $category->id, 'name' => 'Cotton Fabric', 'slug' => 'cotton-fabric', 'price' => 900, 'stock_quantity' => 3, 'is_active' => true]);
 
@@ -74,7 +94,7 @@ test('product stock adjustment cannot be negative', function () {
 });
 
 test('product list can filter low stock products and sort them by stock quantity', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
     Product::create(['category_id' => $category->id, 'name' => 'Five Items', 'slug' => 'five-items', 'price' => 1000, 'stock_quantity' => 5, 'is_active' => true]);
     Product::create(['category_id' => $category->id, 'name' => 'Ten Items', 'slug' => 'ten-items', 'price' => 1000, 'stock_quantity' => 10, 'is_active' => true]);
@@ -86,7 +106,7 @@ test('product list can filter low stock products and sort them by stock quantity
 });
 
 test('product list can search by product name and filter by category', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $curtains = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
     $bedding = Category::create(['name' => 'Bedding', 'slug' => 'bedding', 'is_active' => true]);
     Product::create(['category_id' => $curtains->id, 'name' => 'Linen Curtain', 'slug' => 'linen-curtain', 'price' => 1000, 'stock_quantity' => 20, 'is_active' => true]);
@@ -98,7 +118,7 @@ test('product list can search by product name and filter by category', function 
 });
 
 test('the product edit screen includes a full-size image preview', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
     $product = Product::create(['category_id' => $category->id, 'name' => 'Velvet Curtain', 'slug' => 'velvet-curtain', 'price' => 7200, 'stock_quantity' => 3, 'is_active' => true]);
     ProductImage::create(['product_id' => $product->id, 'image_path' => 'products/velvet-curtain.jpg']);
@@ -111,7 +131,7 @@ test('the product edit screen includes a full-size image preview', function () {
 
 test('deleting a product removes its uploaded images', function () {
     Storage::fake('public');
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $category = Category::create(['name' => 'Bedding', 'slug' => 'bedding', 'is_active' => true]);
     $product = Product::create(['category_id' => $category->id, 'name' => 'Cotton Duvet Set', 'slug' => 'cotton-duvet-set', 'price' => 8200, 'stock_quantity' => 4, 'is_active' => true]);
     $image = ProductImage::create(['product_id' => $product->id, 'image_path' => 'products/cotton-duvet.jpg']);

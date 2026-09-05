@@ -183,7 +183,7 @@ class ProductController extends Controller
      */
     private function productData(StoreProductRequest|UpdateProductRequest $request, ?Product $product = null): array
     {
-        $data = $request->safe()->except(['images', 'alt_texts', 'is_featured', 'is_active']);
+        $data = $request->safe()->except(['parent_category_id', 'images', 'alt_texts', 'is_featured', 'is_active']);
         $data['slug'] = $this->uniqueSlug($data['name'], $product);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active'] = $request->boolean('is_active');
