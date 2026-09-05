@@ -20,6 +20,8 @@ test('product form provides parent-filtered subcategory options', function () {
         ->assertOk()
         ->assertSee('Product category')
         ->assertSee('Product subcategory')
+        ->assertSee('list="product-colors"', false)
+        ->assertSee('<option value="Ivory"></option>', false)
         ->assertSee('Shower Curtains')
         ->assertSee('value="'.$subcategory->id.'" data-parent-id="'.$category->id.'"', false);
 });
@@ -48,7 +50,7 @@ test('authenticated users can create a product with an image', function () {
 
     $response = $this->actingAs($user)->post(route('admin.products.store'), [
         'parent_category_id' => $category->id,
-        'category_id' => $category->id, 'name' => 'Linen Curtain Panel', 'sku' => 'CK-LIN-001', 'color' => 'Ivory',
+        'category_id' => $category->id, 'name' => 'Linen Curtain Panel', 'sku' => 'CK-LIN-001', 'color' => 'Sunset Coral',
         'price' => '6500.00', 'sale_price' => '5900.00', 'stock_quantity' => 12,
         'is_featured' => true, 'is_active' => true,
         'images' => [UploadedFile::fake()->image('linen-curtain.jpg', 1200, 1600)],
@@ -56,7 +58,7 @@ test('authenticated users can create a product with an image', function () {
 
     $product = Product::where('sku', 'CK-LIN-001')->firstOrFail();
     $response->assertRedirect(route('admin.products.edit', $product));
-    $this->assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'linen-curtain-panel', 'color' => 'Ivory', 'is_featured' => true, 'is_active' => true]);
+    $this->assertDatabaseHas('products', ['id' => $product->id, 'slug' => 'linen-curtain-panel', 'color' => 'Sunset Coral', 'is_featured' => true, 'is_active' => true]);
     $image = ProductImage::where('product_id', $product->id)->firstOrFail();
     Storage::disk('public')->assertExists($image->image_path);
 });
