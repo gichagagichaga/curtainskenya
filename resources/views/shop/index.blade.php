@@ -8,12 +8,18 @@
 
 <style>
     .shop-product-image { aspect-ratio: 1 / 1; }
+    .shop-product-card {
+        border: 1px solid #d8cfc4;
+        background: #fff;
+        padding: 0.375rem;
+    }
     .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .shop-product-title { font-size: 0.78rem; line-height: 1.25; }
     .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
 
     @media (min-width: 640px) {
         .shop-product-image { aspect-ratio: 4 / 5; }
+        .shop-product-card { padding: 0.75rem; }
         .shop-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .shop-product-title { font-size: 1.125rem; line-height: 1.75rem; }
         .shop-product-price { font-size: 1rem; line-height: 1.5rem; }
@@ -81,7 +87,7 @@
 
                 @foreach($products as $product)
 
-                    <article class="group">
+                    <article data-shop-product-card class="shop-product-card group">
 
                         {{-- Product Image --}}
                         <a

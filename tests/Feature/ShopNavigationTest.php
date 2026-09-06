@@ -11,6 +11,7 @@ test('shop views provide links back to the home page', function () {
         ->assertOk()
         ->assertSee('← Home')
         ->assertSee('data-shop-product-grid', false)
+        ->assertSee('data-shop-product-card', false)
         ->assertSee('grid-cols-3', false)
         ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
@@ -19,6 +20,7 @@ test('shop views provide links back to the home page', function () {
         ->assertOk()
         ->assertSee('← Home')
         ->assertSee('data-shop-product-grid', false)
+        ->assertSee('data-shop-product-card', false)
         ->assertSee('grid-cols-3', false)
         ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
