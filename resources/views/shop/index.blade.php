@@ -13,13 +13,27 @@
         background: #fff;
         padding: 0.375rem;
     }
-    .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .shop-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .shop-product-title { font-size: 0.78rem; line-height: 1.25; }
     .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
-    .shop-catalogue-layout { display: grid; gap: 2rem; }
-    .shop-category-sidebar { display: block; }
+    .shop-catalogue-layout {
+        display: grid;
+        grid-template-columns: 8.5rem minmax(0, 1fr);
+        align-items: start;
+        gap: 0.75rem;
+    }
+    .shop-category-sidebar {
+        position: sticky;
+        top: 11rem;
+        display: block;
+        max-height: calc(100svh - 12rem);
+        overflow-y: auto;
+    }
+    .shop-price-fields { display: grid; gap: 0.5rem; }
 
     @media (min-width: 640px) {
+        .shop-catalogue-layout { grid-template-columns: 12rem minmax(0, 1fr); gap: 1.5rem; }
+        .shop-price-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .shop-product-image { aspect-ratio: 4 / 5; }
         .shop-product-card { padding: 0.75rem; }
         .shop-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -29,7 +43,7 @@
 
     @media (min-width: 1024px) {
         .shop-catalogue-layout { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; }
-        .shop-category-sidebar { position: sticky; top: 6rem; }
+        .shop-category-sidebar { top: 6rem; max-height: calc(100vh - 7rem); }
         .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
@@ -110,7 +124,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="shop-price-fields">
                             <div><label for="min-price" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Min price</label><input id="min-price" name="min_price" type="number" min="0" step="100" value="{{ $filters['min_price'] ?? '' }}" placeholder="0" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-2 py-2.5 text-sm"></div>
                             <div><label for="max-price" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Max price</label><input id="max-price" name="max_price" type="number" min="0" step="100" value="{{ $filters['max_price'] ?? '' }}" placeholder="Any" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-2 py-2.5 text-sm"></div>
                         </div>
@@ -141,7 +155,7 @@
 
         @if($products->count())
 
-            <div data-shop-product-grid class="shop-product-grid grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
+            <div data-shop-product-grid class="shop-product-grid grid grid-cols-2 gap-x-2 gap-y-5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
 
                 @foreach($products as $product)
 

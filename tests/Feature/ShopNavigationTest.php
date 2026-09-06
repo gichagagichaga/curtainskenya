@@ -16,7 +16,7 @@ test('shop views provide links back to the home page', function () {
         ->assertSee('Subcategory')
         ->assertSee('Min price')
         ->assertSee('Max price')
-        ->assertSee('grid-cols-3', false)
+        ->assertSee('grid-cols-2', false)
         ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
 
