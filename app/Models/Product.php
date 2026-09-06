@@ -43,6 +43,15 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * Backward-compatible alias for storefront code that labels a product's
+     * assigned category as its subcategory.
+     */
+    public function subcategory(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)

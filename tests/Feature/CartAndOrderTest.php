@@ -24,6 +24,14 @@ test('a customer can add a product to their bag', function () {
         ->assertSee('13,000.00');
 });
 
+test('a product can load its assigned category through the storefront subcategory alias', function () {
+    $product = cartProduct();
+
+    $product->load('subcategory');
+
+    expect($product->subcategory->is($product->category))->toBeTrue();
+});
+
 test('checkout creates an order and reduces stock', function () {
     $product = cartProduct();
     $this->withSession(['cart' => [$product->id => 2]])
