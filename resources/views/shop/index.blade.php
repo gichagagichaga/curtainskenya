@@ -91,11 +91,12 @@
                             <a
                                 href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id])) }}"
                                 class="flex items-center justify-between gap-2 text-sm font-semibold {{ $isSelectedCategory ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}"
+                                @if($isSelectedCategory && $parentCategory->children->isNotEmpty()) data-shop-category-toggle @endif
                                 @if($parentCategory->children->isNotEmpty()) aria-expanded="{{ $isSelectedCategory ? 'true' : 'false' }}" aria-controls="shop-subcategories-{{ $parentCategory->id }}" @endif
                             >
                                 <span>{{ $parentCategory->name }}</span>
                                 @if($parentCategory->children->isNotEmpty())
-                                    <svg class="size-3 shrink-0 transition-transform {{ $isSelectedCategory ? 'rotate-180' : '' }}" aria-hidden="true" viewBox="0 0 12 12" fill="none">
+                                    <svg data-shop-category-chevron class="size-3 shrink-0 transition-transform {{ $isSelectedCategory ? 'rotate-180' : '' }}" aria-hidden="true" viewBox="0 0 12 12" fill="none">
                                         <path d="m2.5 4.25 3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
                                 @endif
@@ -319,6 +320,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-shop-category-toggle]').forEach((toggle) => {
+            toggle.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const dropdown = document.getElementById(toggle.getAttribute('aria-controls'));
+                if (! dropdown) return;
+
+                const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+                dropdown.hidden = isExpanded;
+                toggle.querySelector('[data-shop-category-chevron]')?.classList.toggle('rotate-180', ! isExpanded);
+            });
+        });
+
         const category = document.getElementById('shop-category');
         const subcategory = document.getElementById('shop-subcategory');
 

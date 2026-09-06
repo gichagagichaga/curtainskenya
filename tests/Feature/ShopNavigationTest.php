@@ -60,9 +60,11 @@ test('sidebar subcategories only expand beneath the selected main category', fun
     $this->get(route('shop.index', ['category' => $curtains->id]))
         ->assertOk()
         ->assertSee('aria-expanded="true"', false)
+        ->assertSee('data-shop-category-toggle', false)
         ->assertSee('data-shop-subcategory-dropdown', false)
         ->assertSee('id="shop-subcategories-'.$curtains->id.'"', false)
-        ->assertDontSee('id="shop-subcategories-'.$bedding->id.'"', false);
+        ->assertDontSee('id="shop-subcategories-'.$bedding->id.'"', false)
+        ->assertSee('dropdown.hidden = isExpanded', false);
 });
 
 test('the mobile header provides collapsed navigation and category product search', function () {
