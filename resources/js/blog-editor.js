@@ -54,10 +54,16 @@ const initializeBlogEditor = (root) => {
     const surface = root.querySelector('[data-editor-surface]');
     const toolbar = root.querySelector('[data-editor-toolbar]');
     const input = root.querySelector('[data-editor-image-input]');
+    const imageDialog = root.querySelector('[data-editor-image-dialog]');
+    const imageAlt = root.querySelector('[data-editor-image-alt]');
+    const imageTitle = root.querySelector('[data-editor-image-title]');
+    const imageError = root.querySelector('[data-editor-image-error]');
+    const imageSubmit = root.querySelector('[data-editor-image-submit]');
     const contentInput = root.querySelector('#content');
     const saveStatus = root.querySelector('[data-editor-save-status]');
 
     let editor;
+    let paragraphStyle;
 
     const updateStatus = () => {
         const words = editor.storage.characterCount.words();
@@ -76,6 +82,12 @@ const initializeBlogEditor = (root) => {
             button.classList.toggle('is-active', active);
             button.setAttribute('aria-pressed', active.toString());
         });
+
+        if (paragraphStyle) {
+            paragraphStyle.value = [1, 2, 3, 4].find((level) => editor.isActive('heading', { level }))?.toString()
+                || (editor.isActive('blockquote') ? 'blockquote' : null)
+                || (editor.isActive('codeBlock') ? 'codeBlock' : 'paragraph');
+        }
     };
 
     editor = new Editor({
@@ -138,14 +150,15 @@ const initializeBlogEditor = (root) => {
     );
 
     const typography = createGroup(toolbar, 'Typography');
-    typography.append(
-        createSelect('Paragraph and heading style', [['paragraph', 'Paragraph'], ['1', 'Heading 1'], ['2', 'Heading 2'], ['3', 'Heading 3'], ['4', 'Heading 4'], ['blockquote', 'Blockquote'], ['codeBlock', 'Code block']], (value) => {
+    paragraphStyle = createSelect('Paragraph and heading style', [['paragraph', 'Paragraph'], ['1', 'Heading 1'], ['2', 'Heading 2'], ['3', 'Heading 3'], ['4', 'Heading 4'], ['blockquote', 'Blockquote'], ['codeBlock', 'Code block']], (value) => {
             const chain = editor.chain().focus();
             if (value === 'paragraph') chain.setParagraph().run();
-            else if (value === 'blockquote') chain.toggleBlockquote().run();
-            else if (value === 'codeBlock') chain.toggleCodeBlock().run();
-            else chain.toggleHeading({ level: Number(value) }).run();
-        }),
+            else if (value === 'blockquote') chain.setBlockquote().run();
+            else if (value === 'codeBlock') chain.setCodeBlock().run();
+            else chain.setHeading({ level: Number(value) }).run();
+        });
+    typography.append(
+        paragraphStyle,
         createSelect('Font family', [['', 'Default font'], ['Arial', 'Arial'], ['Georgia', 'Georgia'], ['Tahoma', 'Tahoma'], ['Times New Roman', 'Times New Roman'], ['Verdana', 'Verdana']], (value) => value ? editor.chain().focus().setFontFamily(value).run() : editor.chain().focus().unsetFontFamily().run()),
         createSelect('Font size', [['', 'Font size'], ['12px', '12'], ['14px', '14'], ['16px', '16'], ['18px', '18'], ['20px', '20'], ['24px', '24'], ['30px', '30'], ['36px', '36']], (value) => value ? editor.chain().focus().setFontSize(value).run() : editor.chain().focus().unsetFontSize().run()),
         createSelect('Line spacing', [['', 'Line spacing'], ['1', '1.0'], ['1.25', '1.25'], ['1.5', '1.5'], ['1.75', '1.75'], ['2', '2.0']], (value) => value ? editor.chain().focus().setLineHeight(value).run() : editor.chain().focus().unsetLineHeight().run()),
@@ -206,7 +219,9 @@ const initializeBlogEditor = (root) => {
         createButton('Unlink', 'Remove link', () => editor.chain().focus().extendMarkRange('link').unsetLink().run()),
         createButton('Table', 'Insert a 3 by 3 table', () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()),
         createButton('+ Row', 'Add a table row', () => editor.chain().focus().addRowAfter().run()),
+        createButton('− Row', 'Delete the current table row', () => editor.chain().focus().deleteRow().run()),
         createButton('+ Column', 'Add a table column', () => editor.chain().focus().addColumnAfter().run()),
+        createButton('− Column', 'Delete the current table column', () => editor.chain().focus().deleteColumn().run()),
         createButton('Delete table', 'Delete the current table', () => editor.chain().focus().deleteTable().run()),
         createButton('—', 'Insert horizontal line', () => editor.chain().focus().setHorizontalRule().run()),
         createButton('YouTube', 'Embed a YouTube video', () => {
@@ -215,37 +230,58 @@ const initializeBlogEditor = (root) => {
         }),
     );
 
-    input.addEventListener('change', async () => {
+    uploadButton.replaceWith(createButton('Upload image', 'Upload an image with alt text', () => {
+        imageError.classList.add('hidden');
+        imageError.textContent = '';
+        imageDialog.showModal();
+    }));
+
+    root.querySelector('[data-editor-image-cancel]').addEventListener('click', () => imageDialog.close());
+    imageSubmit.addEventListener('click', async () => {
         const file = input.files[0];
-        if (! file) return;
-        const alt = window.prompt('Describe this image for accessibility and SEO');
-        if (! alt) {
-            input.value = '';
+        const alt = imageAlt.value.trim();
+        imageError.classList.add('hidden');
+
+        if (! file || ! alt) {
+            imageError.textContent = 'Choose an image and provide meaningful alt text.';
+            imageError.classList.remove('hidden');
             return;
         }
-        const title = window.prompt('Optional image title or caption') || '';
+
         const body = new FormData();
         body.append('image', file);
         body.append('alt', alt);
-        body.append('title', title);
-        uploadButton.disabled = true;
-        uploadButton.textContent = 'Uploading…';
+        body.append('title', imageTitle.value.trim());
+        imageSubmit.disabled = true;
+        imageSubmit.textContent = 'Uploading…';
 
         try {
             const response = await fetch(root.dataset.uploadUrl, {
                 method: 'POST',
-                headers: { 'X-CSRF-TOKEN': root.dataset.csrfToken, Accept: 'application/json' },
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': root.dataset.csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    Accept: 'application/json',
+                },
                 body,
             });
-            if (! response.ok) throw new Error('The image could not be uploaded.');
-            const image = await response.json();
-            editor.chain().focus().setImage(image).run();
-        } catch (error) {
-            window.alert(error.message);
-        } finally {
-            uploadButton.disabled = false;
-            uploadButton.textContent = 'Upload image';
+            const result = await response.json().catch(() => ({}));
+            if (! response.ok) {
+                const validationMessage = Object.values(result.errors || {}).flat()[0];
+                throw new Error(validationMessage || result.message || 'The image could not be uploaded.');
+            }
+            editor.chain().focus().setImage(result).run();
             input.value = '';
+            imageAlt.value = '';
+            imageTitle.value = '';
+            imageDialog.close();
+        } catch (error) {
+            imageError.textContent = error.message;
+            imageError.classList.remove('hidden');
+        } finally {
+            imageSubmit.disabled = false;
+            imageSubmit.textContent = 'Upload and insert';
         }
     });
 
