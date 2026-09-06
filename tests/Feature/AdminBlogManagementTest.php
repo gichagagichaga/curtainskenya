@@ -140,6 +140,25 @@ test('authenticated users can create an article with seo and a featured image', 
     Storage::disk('public')->assertExists($post->featured_image);
 });
 
+test('content managers can define and assign a category while creating an article', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
+
+    $response = $this->actingAs($user)->post(route('admin.blog.posts.store'), [
+        'title' => 'Choosing bedroom curtains',
+        'blog_category_name' => 'Bedroom curtain guides',
+        'content' => '<p>Useful bedroom curtain advice.</p>',
+        'status' => 'draft',
+    ]);
+
+    $category = BlogCategory::query()->where('name', 'Bedroom curtain guides')->firstOrFail();
+    $post = Post::query()->where('title', 'Choosing bedroom curtains')->firstOrFail();
+
+    $response->assertRedirect(route('admin.blog.posts.edit', $post));
+    expect($category->slug)->toBe('bedroom-curtain-guides')
+        ->and($category->is_active)->toBeTrue()
+        ->and($post->blog_category_id)->toBe($category->id);
+});
+
 test('article faq requires a complete question and answer pair', function () {
     $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
 

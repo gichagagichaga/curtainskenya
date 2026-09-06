@@ -355,6 +355,18 @@ const initializeBlogEditors = () => {
             console.error('Blog editor initialization failed.', error);
         }
     });
+
+    document.querySelectorAll('[data-blog-category-select]').forEach((select) => {
+        if (select.dataset.categoryChoiceInitialized === 'true') return;
+        select.dataset.categoryChoiceInitialized = 'true';
+        const categoryName = document.querySelector('[data-blog-category-name]');
+        select.addEventListener('change', () => {
+            if (select.value) categoryName.value = '';
+        });
+        categoryName.addEventListener('input', () => {
+            if (categoryName.value.trim()) select.value = '';
+        });
+    });
 };
 
 const prepareImageFile = async (file) => {

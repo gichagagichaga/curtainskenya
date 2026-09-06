@@ -35,7 +35,9 @@ class BlogPostController extends Controller
     public function store(StorePostRequest $request): RedirectResponse
     {
         $post = DB::transaction(function () use ($request): Post {
-            $post = Post::create($this->postData($request));
+            $data = $this->postData($request);
+            $data['blog_category_id'] = $this->resolveCategoryId($request);
+            $post = Post::create($data);
             $this->syncRelations($post, $request);
 
             return $post;
@@ -56,7 +58,9 @@ class BlogPostController extends Controller
         $oldImage = $post->featured_image;
 
         DB::transaction(function () use ($request, $post): void {
-            $post->update($this->postData($request, $post));
+            $data = $this->postData($request, $post);
+            $data['blog_category_id'] = $this->resolveCategoryId($request);
+            $post->update($data);
             $this->syncRelations($post, $request);
         });
 
@@ -108,7 +112,7 @@ class BlogPostController extends Controller
 
     private function postData(StorePostRequest|UpdatePostRequest $request, ?Post $post = null): array
     {
-        $data = $request->safe()->except(['featured_image', 'tag_ids', 'product_ids', 'related_post_ids', 'noindex']);
+        $data = $request->safe()->except(['featured_image', 'tag_ids', 'product_ids', 'related_post_ids', 'noindex', 'blog_category_name']);
         $data['author_id'] = $post?->author_id ?? $request->user()->id;
         $data['slug'] = $this->uniqueSlug($request->string('slug')->toString() ?: $data['title'], $post);
         $data['noindex'] = $request->boolean('noindex');
@@ -129,6 +133,39 @@ class BlogPostController extends Controller
         }
 
         return $data;
+    }
+
+    private function resolveCategoryId(StorePostRequest|UpdatePostRequest $request): ?int
+    {
+        $newCategoryName = $request->string('blog_category_name')->trim()->toString();
+
+        if ($newCategoryName === '') {
+            return $request->filled('blog_category_id') ? $request->integer('blog_category_id') : null;
+        }
+
+        $category = BlogCategory::query()->firstOrCreate(
+            ['name' => $newCategoryName],
+            [
+                'slug' => $this->uniqueCategorySlug($newCategoryName),
+                'is_active' => true,
+                'noindex' => false,
+            ],
+        );
+
+        return $category->id;
+    }
+
+    private function uniqueCategorySlug(string $name): string
+    {
+        $baseSlug = Str::slug($name) ?: 'topic';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (BlogCategory::query()->where('slug', $slug)->exists()) {
+            $slug = $baseSlug.'-'.$suffix++;
+        }
+
+        return $slug;
     }
 
     private function syncRelations(Post $post, StorePostRequest|UpdatePostRequest $request): void
