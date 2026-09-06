@@ -16,6 +16,8 @@
     .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .shop-product-title { font-size: 0.78rem; line-height: 1.25; }
     .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
+    .shop-catalogue-layout { display: grid; gap: 2rem; }
+    .shop-category-sidebar { display: none; }
 
     @media (min-width: 640px) {
         .shop-product-image { aspect-ratio: 4 / 5; }
@@ -26,6 +28,9 @@
     }
 
     @media (min-width: 1024px) {
+        .shop-catalogue-layout { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; }
+        .shop-category-sidebar { display: block; }
+        .shop-mobile-filters { display: none; }
         .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
@@ -56,13 +61,73 @@
 </section>
 
 
-{{-- Category Navigation --}}
-@include('shop._category-navigation')
-
-
 {{-- Products --}}
-<section class="bg-white">
-    <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8 lg:py-20">
+<section class="bg-[#f5f3f0]">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+
+        <div class="shop-catalogue-layout">
+            <aside class="shop-category-sidebar sticky top-24 border border-[#d8cfc4] bg-white p-5" aria-label="Shop categories">
+                <p class="text-xs font-semibold tracking-[0.18em] text-[#29231e] uppercase">Category</p>
+                <a href="{{ route('shop.index', request()->except('category', 'subcategory', 'page')) }}" class="mt-4 block text-sm font-medium {{ empty($filters['category']) ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}">All products</a>
+                <div class="mt-4 space-y-4">
+                    @foreach($categories as $parentCategory)
+                        <div>
+                            <a href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id])) }}" class="block text-sm font-semibold {{ (string) ($filters['category'] ?? '') === (string) $parentCategory->id ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}">{{ $parentCategory->name }}</a>
+                            @if($parentCategory->children->isNotEmpty())
+                                <div class="mt-2 space-y-1.5 border-l border-[#e4ddd5] pl-3">
+                                    @foreach($parentCategory->children as $subcategory)
+                                        <a href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id, 'subcategory' => $subcategory->id])) }}" class="block text-xs leading-5 {{ (string) ($filters['subcategory'] ?? '') === (string) $subcategory->id ? 'font-semibold text-[#8a6a4a]' : 'text-[#665b52] hover:text-[#29231e]' }}">{{ $subcategory->name }}</a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </aside>
+
+            <div class="min-w-0">
+                <div class="shop-mobile-filters mb-4 border border-[#d8cfc4] bg-white p-4">
+                    <p class="text-sm font-semibold text-[#29231e]">Filter products</p>
+                    <p class="mt-1 text-xs text-[#81766c]">Choose a category, subcategory or price range.</p>
+                </div>
+
+                <form method="GET" action="{{ route('shop.index') }}" data-shop-filters class="mb-6 border border-[#d8cfc4] bg-white p-4">
+                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                        <div class="xl:col-span-2">
+                            <label for="shop-q" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Search</label>
+                            <input id="shop-q" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search products" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-3 py-2.5 text-sm">
+                        </div>
+                        <div>
+                            <label for="shop-category" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Category</label>
+                            <select id="shop-category" name="category" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-3 py-2.5 text-sm">
+                                <option value="">All categories</option>
+                                @foreach($categories as $parentCategory)
+                                    <option value="{{ $parentCategory->id }}" @selected((string) ($filters['category'] ?? '') === (string) $parentCategory->id)>{{ $parentCategory->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="shop-subcategory" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Subcategory</label>
+                            <select id="shop-subcategory" name="subcategory" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-3 py-2.5 text-sm">
+                                <option value="">All subcategories</option>
+                                @foreach($categories as $parentCategory)
+                                    @foreach($parentCategory->children as $subcategory)
+                                        <option value="{{ $subcategory->id }}" data-parent-id="{{ $parentCategory->id }}" @selected((string) ($filters['subcategory'] ?? '') === (string) $subcategory->id)>{{ $subcategory->name }}</option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label for="min-price" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Min price</label><input id="min-price" name="min_price" type="number" min="0" step="100" value="{{ $filters['min_price'] ?? '' }}" placeholder="0" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-2 py-2.5 text-sm"></div>
+                            <div><label for="max-price" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Max price</label><input id="max-price" name="max_price" type="number" min="0" step="100" value="{{ $filters['max_price'] ?? '' }}" placeholder="Any" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-2 py-2.5 text-sm"></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-3">
+                        <button class="bg-[#29231e] px-5 py-2.5 text-xs font-semibold tracking-[0.14em] text-white uppercase">Apply filters</button>
+                        @if(collect($filters)->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty())<a href="{{ route('shop.index') }}" class="text-xs font-semibold text-[#8a6a4a] underline underline-offset-4">Clear filters</a>@endif
+                    </div>
+                    @error('max_price')<p class="mt-2 text-sm text-red-700">{{ $message }}</p>@enderror
+                </form>
 
         <div class="mb-10 flex items-end justify-between gap-6">
             <div>
@@ -225,8 +290,34 @@
 
         @endif
 
+            </div>
+        </div>
+
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const category = document.getElementById('shop-category');
+        const subcategory = document.getElementById('shop-subcategory');
+
+        if (! category || ! subcategory) return;
+
+        const options = Array.from(subcategory.options).slice(1);
+        const filterSubcategories = () => {
+            options.forEach((option) => {
+                const visible = category.value === '' || option.dataset.parentId === category.value;
+                option.hidden = ! visible;
+                option.disabled = ! visible;
+            });
+
+            if (subcategory.selectedOptions[0]?.disabled) subcategory.value = '';
+        };
+
+        category.addEventListener('change', filterSubcategories);
+        filterSubcategories();
+    });
+</script>
 
 
 {{-- Consultation CTA --}}

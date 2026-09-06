@@ -15,6 +15,9 @@ class ShopController extends Controller
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('is_active', true)],
+            'subcategory' => ['nullable', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('is_active', true)->whereNotNull('parent_id'))],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0', 'gte:min_price'],
         ]);
 
         $categories = Category::query()
@@ -48,11 +51,14 @@ class ShopController extends Controller
 
                 $query->whereIn('category_id', $categoryIds);
             })
+            ->when($filters['subcategory'] ?? null, fn ($query, int $subcategoryId) => $query->where('category_id', $subcategoryId))
+            ->when($filters['min_price'] ?? null, fn ($query, float|int|string $minimumPrice) => $query->whereRaw('CAST(COALESCE(sale_price, price) AS DECIMAL(12, 2)) >= ?', [(float) $minimumPrice]))
+            ->when($filters['max_price'] ?? null, fn ($query, float|int|string $maximumPrice) => $query->whereRaw('CAST(COALESCE(sale_price, price) AS DECIMAL(12, 2)) <= ?', [(float) $maximumPrice]))
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
-        return view('shop.index', compact('categories', 'products'));
+        return view('shop.index', compact('categories', 'filters', 'products'));
     }
 
     public function category(Category $category): View

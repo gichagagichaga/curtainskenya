@@ -12,6 +12,10 @@ test('shop views provide links back to the home page', function () {
         ->assertSee('← Home')
         ->assertSee('data-shop-product-grid', false)
         ->assertSee('data-shop-product-card', false)
+        ->assertSee('data-shop-filters', false)
+        ->assertSee('Subcategory')
+        ->assertSee('Min price')
+        ->assertSee('Max price')
         ->assertSee('grid-cols-3', false)
         ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
@@ -61,4 +65,32 @@ test('shop search filters products by text and category', function () {
     $this->get(route('shop.index', ['q' => 'White', 'category' => $curtains->id]))
         ->assertSee('White Voile Curtain')
         ->assertDontSee('White Cotton Duvet');
+});
+
+test('shop filters products by subcategory and effective selling price', function () {
+    $curtains = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $sheers = Category::create(['name' => 'Sheers', 'slug' => 'sheers', 'parent_id' => $curtains->id, 'is_active' => true]);
+    $blackouts = Category::create(['name' => 'Blackouts', 'slug' => 'blackouts', 'parent_id' => $curtains->id, 'is_active' => true]);
+    Product::create(['category_id' => $sheers->id, 'name' => 'Sale Voile', 'slug' => 'sale-voile', 'price' => 6000, 'sale_price' => 4500, 'stock_quantity' => 2, 'is_active' => true]);
+    Product::create(['category_id' => $sheers->id, 'name' => 'Budget Voile', 'slug' => 'budget-voile', 'price' => 3000, 'stock_quantity' => 2, 'is_active' => true]);
+    Product::create(['category_id' => $blackouts->id, 'name' => 'Midrange Blackout', 'slug' => 'midrange-blackout', 'price' => 4500, 'stock_quantity' => 2, 'is_active' => true]);
+
+    $this->get(route('shop.index', [
+        'category' => $curtains->id,
+        'subcategory' => $sheers->id,
+        'min_price' => 4000,
+        'max_price' => 5000,
+    ]))
+        ->assertSee('Sale Voile')
+        ->assertDontSee('Budget Voile')
+        ->assertDontSee('Midrange Blackout');
+});
+
+test('shop rejects a maximum price below the minimum price', function () {
+    $this->from(route('shop.index'))->get(route('shop.index', [
+        'min_price' => 5000,
+        'max_price' => 4000,
+    ]))
+        ->assertRedirect(route('shop.index'))
+        ->assertSessionHasErrors('max_price');
 });
