@@ -12,6 +12,11 @@
     .home-mobile-featured-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .home-compact-category-card { min-height: 8.5rem; }
     .home-featured-image { aspect-ratio: 1 / 1; }
+    .home-featured-card {
+        border: 1px solid #d8cfc4;
+        background: #fff;
+        padding: 0.375rem;
+    }
 
     @media (min-width: 640px) {
         .home-mobile-catalogue-section { padding-block: clamp(4.5rem, 9vw, 7.5rem); }
@@ -19,6 +24,7 @@
         .home-mobile-featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .home-compact-category-card { min-height: 20rem; }
         .home-featured-image { aspect-ratio: 4 / 5; }
+        .home-featured-card { padding: 0.75rem; }
     }
 
     @media (min-width: 1024px) {
@@ -104,7 +110,7 @@
                         : ($categoryImages[$product->category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85');
                     $price = $product->sale_price ?? $product->price;
                 @endphp
-                <article class="group">
+                <article data-home-featured-card class="home-featured-card group">
                     <a href="{{ route('products.show', $product) }}" class="home-featured-image relative block overflow-hidden bg-ck-beige">
                         @if ($product->sale_price)
                             <span class="absolute left-3 top-3 z-10 bg-white px-2.5 py-1 text-[0.58rem] font-medium tracking-[0.15em] text-ck-dark uppercase">Special price</span>
