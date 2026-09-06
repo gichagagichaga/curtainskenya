@@ -117,11 +117,24 @@ test('categories with products cannot be deleted', function () {
     $category = Category::create(['name' => 'Bedding', 'slug' => 'bedding', 'is_active' => true]);
     Product::create(['category_id' => $category->id, 'name' => 'Cotton Duvet Set', 'slug' => 'cotton-duvet-set', 'price' => 8200, 'stock_quantity' => 4, 'is_active' => true]);
 
-    $this->actingAs($user)->from(route('admin.categories.edit', $category))->delete(route('admin.categories.destroy', $category))
-        ->assertRedirect(route('admin.categories.edit', $category))
-        ->assertSessionHas('error');
+    $this->actingAs($user)
+        ->from(route('admin.categories.edit', $category))
+        ->followingRedirects()
+        ->delete(route('admin.categories.destroy', $category))
+        ->assertSee('This category cannot be deleted while it still has products. Move or delete those products first.');
 
     $this->assertDatabaseHas('categories', ['id' => $category->id]);
+});
+
+test('an empty category can be deleted', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $category = Category::create(['name' => 'Accessories', 'slug' => 'accessories', 'is_active' => true]);
+
+    $this->actingAs($user)->delete(route('admin.categories.destroy', $category))
+        ->assertRedirect(route('admin.categories.index'))
+        ->assertSessionHas('status', 'Category deleted successfully.');
+
+    $this->assertDatabaseMissing('categories', ['id' => $category->id]);
 });
 
 test('categories with subcategories cannot be deleted', function () {
