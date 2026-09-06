@@ -100,6 +100,20 @@ test('catalogue managers can create a subcategory from the dedicated flow', func
     ]);
 });
 
+test('the category edit page links to a preselected subcategory form', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+    $parent = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $subcategory = Category::create(['name' => 'Sheers', 'slug' => 'sheers', 'parent_id' => $parent->id, 'is_active' => true]);
+
+    $this->actingAs($user)->get(route('admin.categories.edit', $subcategory))
+        ->assertSee('Delete category')
+        ->assertSee('Add subcategory')
+        ->assertSee(route('admin.subcategories.create', ['parent_id' => $parent->id]), false);
+
+    $this->actingAs($user)->get(route('admin.subcategories.create', ['parent_id' => $parent->id]))
+        ->assertSee('value="'.$parent->id.'" selected', false);
+});
+
 test('subcategories cannot be nested below other subcategories', function () {
     $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
     $parent = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);

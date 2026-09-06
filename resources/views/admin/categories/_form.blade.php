@@ -15,7 +15,7 @@
             <select id="parent_id" name="parent_id" @required($subcategoryMode) class="mt-2 block w-full rounded-lg border-zinc-300 bg-white text-zinc-900 shadow-sm focus:border-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white">
                 <option value="">{{ $subcategoryMode ? 'Select a main category' : 'None — make this a main category' }}</option>
                 @foreach ($parentCategories as $parentCategory)
-                    <option value="{{ $parentCategory->id }}" @selected((string) old('parent_id', $category?->parent_id) === (string) $parentCategory->id)>{{ $parentCategory->name }}</option>
+                    <option value="{{ $parentCategory->id }}" @selected((string) old('parent_id', $category?->parent_id ?? request('parent_id')) === (string) $parentCategory->id)>{{ $parentCategory->name }}</option>
                 @endforeach
             </select>
             <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">Select a main category to create this as its subcategory.</p>
