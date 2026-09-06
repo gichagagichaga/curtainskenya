@@ -25,6 +25,8 @@ test('a main category displays its subcategories and their products', function (
 
     $this->get(route('shop.category', $category))
         ->assertOk()
+        ->assertSee('data-category-menu="curtains"', false)
+        ->assertSee('View all Curtains')
         ->assertSee($subcategory->name)
         ->assertSee(route('shop.category', $subcategory), false)
         ->assertSee($product->name);

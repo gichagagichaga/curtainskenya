@@ -35,50 +35,7 @@
 
 
 {{-- Category Navigation --}}
-<section class="border-b border-[#e7dfd5] bg-white">
-
-    <div class="mx-auto max-w-7xl px-6 py-6 lg:px-8">
-
-        <div class="flex gap-3 overflow-x-auto pb-2">
-
-            <a
-                href="{{ route('shop.index') }}"
-                class="whitespace-nowrap rounded-full border border-[#ded5ca] bg-white px-5 py-2.5 text-sm text-[#4f453d] transition hover:border-[#8a6a4a] hover:text-[#8a6a4a]"
-            >
-                All Products
-            </a>
-
-            @foreach($categories as $item)
-
-                <a
-                    href="{{ route('shop.category', $item->slug) }}"
-                    class="whitespace-nowrap rounded-full border px-5 py-2.5 text-sm transition
-                    {{ $item->id === $category->id
-                        ? 'border-[#29231e] bg-[#29231e] text-white'
-                        : 'border-[#ded5ca] bg-white text-[#4f453d] hover:border-[#8a6a4a] hover:text-[#8a6a4a]' }}"
-                >
-                    {{ $item->name }}
-                </a>
-
-                @foreach($item->children as $subcategory)
-                    <a
-                        href="{{ route('shop.category', $subcategory->slug) }}"
-                        class="whitespace-nowrap rounded-full border px-5 py-2.5 text-sm transition
-                        {{ $subcategory->id === $category->id
-                            ? 'border-[#29231e] bg-[#29231e] text-white'
-                            : 'border-[#ded5ca] bg-white text-[#4f453d] hover:border-[#8a6a4a] hover:text-[#8a6a4a]' }}"
-                    >
-                        {{ $item->name }} › {{ $subcategory->name }}
-                    </a>
-                @endforeach
-
-            @endforeach
-
-        </div>
-
-    </div>
-
-</section>
+@include('shop._category-navigation', ['activeCategory' => $category])
 
 
 {{-- Products --}}
