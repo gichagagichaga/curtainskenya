@@ -90,7 +90,7 @@ class Post extends Model
 
     public function seoDescription(): string
     {
-        return $this->meta_description ?: Str::limit($this->excerpt ?: Str::stripTags($this->content), 160);
+        return $this->meta_description ?: Str::limit($this->excerpt ?: strip_tags($this->content), 160);
     }
 
     public function canonicalUrl(): string

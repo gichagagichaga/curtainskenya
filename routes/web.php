@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('enquiries/{contactMessage}/new', [ContactMessageController::class, 'markNew'])->middleware('role:customer_service')->name('enquiries.new');
         Route::get('story', [AdminStoryController::class, 'edit'])->middleware('role:content_manager')->name('story.edit');
         Route::put('story', [AdminStoryController::class, 'update'])->middleware('role:content_manager')->name('story.update');
+        Route::post('blog/images', [BlogPostController::class, 'storeImage'])->middleware('role:content_manager')->name('blog.images.store');
         Route::resource('blog/posts', BlogPostController::class)->middleware('role:content_manager')->names('blog.posts')->except('show');
         Route::resource('blog/categories', BlogCategoryController::class)->middleware('role:content_manager')->names('blog.categories')->except('show');
         Route::resource('blog/tags', TagController::class)->middleware('role:content_manager')->names('blog.tags')->except('show');

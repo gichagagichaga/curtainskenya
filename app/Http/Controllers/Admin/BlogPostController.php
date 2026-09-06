@@ -9,7 +9,10 @@ use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\Tag;
+use App\Support\BlogContent;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -76,6 +79,23 @@ class BlogPostController extends Controller
         return redirect()->route('admin.blog.posts.index')->with('status', 'Article deleted successfully.');
     }
 
+    public function storeImage(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'alt' => ['required', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $path = $request->file('image')->store('blog/content', 'public');
+
+        return response()->json([
+            'url' => Storage::disk('public')->url($path),
+            'alt' => $validated['alt'],
+            'title' => $validated['title'] ?? null,
+        ]);
+    }
+
     private function formData(?Post $post = null): array
     {
         return [
@@ -92,6 +112,7 @@ class BlogPostController extends Controller
         $data['author_id'] = $post?->author_id ?? $request->user()->id;
         $data['slug'] = $this->uniqueSlug($request->string('slug')->toString() ?: $data['title'], $post);
         $data['noindex'] = $request->boolean('noindex');
+        $data['content'] = BlogContent::prepareForStorage($data['content']);
         $data['faqs'] = collect($request->validated('faqs', []))
             ->filter(fn (array $faq): bool => filled($faq['question'] ?? null) && filled($faq['answer'] ?? null))
             ->map(fn (array $faq): array => [

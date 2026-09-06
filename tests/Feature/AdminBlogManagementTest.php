@@ -18,10 +18,84 @@ test('article editor includes search and social seo controls', function () {
         ->assertSee('SEO and social sharing details')
         ->assertSee('name="canonical_url"', false)
         ->assertSee('name="og_title"', false)
-        ->assertSee('data-markdown-before', false)
+        ->assertSee('data-blog-editor', false)
+        ->assertSee('data-editor-toolbar', false)
+        ->assertSee('data-editor-preview-open', false)
+        ->assertSee(route('admin.blog.images.store'), false)
         ->assertSee('Frequently asked questions (SEO)')
         ->assertSee('name="faqs[0][question]"', false)
         ->assertSee('name="faqs[0][answer]"', false);
+});
+
+test('rich article html is sanitized before it is stored and rendered', function () {
+    $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
+
+    $response = $this->actingAs($user)->post(route('admin.blog.posts.store'), [
+        'title' => 'Safe rich article',
+        'content' => '<h2>Useful heading</h2><p style="text-align:center" onclick="alert(1)"><strong>Helpful text</strong></p><script>alert(2)</script><img src="javascript:alert(3)" onerror="alert(4)" alt="Unsafe image">',
+        'status' => 'published',
+    ]);
+
+    $post = Post::query()->where('title', 'Safe rich article')->firstOrFail();
+
+    $response->assertRedirect(route('admin.blog.posts.edit', $post));
+    expect($post->content)
+        ->toContain('<h2>Useful heading</h2>')
+        ->toContain('<strong>Helpful text</strong>')
+        ->not->toContain('<script')
+        ->not->toContain('onclick')
+        ->not->toContain('onerror')
+        ->not->toContain('javascript:');
+
+    $this->get(route('blog.show', $post))
+        ->assertOk()
+        ->assertSee('<h2>Useful heading</h2>', false)
+        ->assertDontSee('<script>alert(2)</script>', false)
+        ->assertDontSee('javascript:alert(3)', false)
+        ->assertDontSee('onerror="alert(4)"', false);
+});
+
+test('content managers can upload safe images into the rich text editor', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
+
+    $response = $this->actingAs($user)->postJson(route('admin.blog.images.store'), [
+        'image' => UploadedFile::fake()->image('curtain-guide.webp', 1200, 800),
+        'alt' => 'Layered curtains in a bright living room',
+        'title' => 'Layered curtain inspiration',
+    ]);
+
+    $path = str($response->json('url'))->after('/storage/')->toString();
+    $response->assertOk()
+        ->assertJsonPath('alt', 'Layered curtains in a bright living room')
+        ->assertJsonPath('title', 'Layered curtain inspiration');
+    Storage::disk('public')->assertExists($path);
+});
+
+test('unsafe rich text image uploads are rejected', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
+
+    $this->actingAs($user)->postJson(route('admin.blog.images.store'), [
+        'image' => UploadedFile::fake()->create('payload.svg', 20, 'image/svg+xml'),
+        'alt' => 'Unsafe vector',
+    ])->assertUnprocessable()->assertJsonValidationErrors('image');
+});
+
+test('rich text image uploads require an authorized content manager', function () {
+    Storage::fake('public');
+
+    $this->postJson(route('admin.blog.images.store'), [
+        'image' => UploadedFile::fake()->image('curtains.jpg'),
+        'alt' => 'Curtains',
+    ])->assertUnauthorized();
+
+    $user = User::factory()->create(['role' => User::ROLE_CATALOGUE_MANAGER]);
+
+    $this->actingAs($user)->postJson(route('admin.blog.images.store'), [
+        'image' => UploadedFile::fake()->image('curtains.jpg'),
+        'alt' => 'Curtains',
+    ])->assertForbidden();
 });
 
 test('authenticated users can create an article with seo and a featured image', function () {
