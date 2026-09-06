@@ -35,6 +35,7 @@ class Post extends Model
         'og_description',
         'og_image',
         'noindex',
+        'faqs',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class Post extends Model
             'published_at' => 'datetime',
             'reading_time' => 'integer',
             'noindex' => 'boolean',
+            'faqs' => 'array',
         ];
     }
 

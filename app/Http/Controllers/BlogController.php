@@ -91,7 +91,19 @@ class BlogController extends Controller
 
         $breadcrumbs[] = ['@type' => 'ListItem', 'position' => count($breadcrumbs) + 1, 'name' => $post->title, 'item' => $post->canonicalUrl()];
         $breadcrumbSchema = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $breadcrumbs];
+        $faqSchema = filled($post->faqs) ? [
+            '@context' => 'https://schema.org',
+            '@type' => 'FAQPage',
+            'mainEntity' => collect($post->faqs)->map(fn (array $faq): array => [
+                '@type' => 'Question',
+                'name' => $faq['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $faq['answer'],
+                ],
+            ])->all(),
+        ] : null;
 
-        return view('blog.show', compact('post', 'relatedPosts', 'articleSchema', 'breadcrumbSchema'));
+        return view('blog.show', compact('post', 'relatedPosts', 'articleSchema', 'breadcrumbSchema', 'faqSchema'));
     }
 }

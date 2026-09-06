@@ -15,13 +15,22 @@ test('the blog only lists published articles', function () {
 });
 
 test('published articles show seo metadata and structured data', function () {
-    $post = Post::factory()->published()->create(['title' => 'How to measure curtains', 'slug' => 'how-to-measure-curtains']);
+    $post = Post::factory()->published()->create([
+        'title' => 'How to measure curtains',
+        'slug' => 'how-to-measure-curtains',
+        'faqs' => [[
+            'question' => 'How wide should curtains be?',
+            'answer' => 'Curtains should usually be one and a half to two times the track width.',
+        ]],
+    ]);
 
     $this->get(route('blog.show', $post))
         ->assertOk()
         ->assertSee('How to measure curtains | Curtains Kenya', false)
         ->assertSee('application/ld+json', false)
-        ->assertSee('BlogPosting', false);
+        ->assertSee('BlogPosting', false)
+        ->assertSee('FAQPage', false)
+        ->assertSee('How wide should curtains be?');
 });
 
 test('draft and scheduled articles return not found publicly', function () {

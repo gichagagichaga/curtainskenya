@@ -92,6 +92,14 @@ class BlogPostController extends Controller
         $data['author_id'] = $post?->author_id ?? $request->user()->id;
         $data['slug'] = $this->uniqueSlug($request->string('slug')->toString() ?: $data['title'], $post);
         $data['noindex'] = $request->boolean('noindex');
+        $data['faqs'] = collect($request->validated('faqs', []))
+            ->filter(fn (array $faq): bool => filled($faq['question'] ?? null) && filled($faq['answer'] ?? null))
+            ->map(fn (array $faq): array => [
+                'question' => trim($faq['question']),
+                'answer' => trim($faq['answer']),
+            ])
+            ->values()
+            ->all() ?: null;
         $data['reading_time'] = max(1, (int) ceil(str_word_count(strip_tags($data['content'])) / 200));
         $data['published_at'] = $data['status'] === 'published' ? ($data['published_at'] ?? $post?->published_at ?? now()) : null;
 
