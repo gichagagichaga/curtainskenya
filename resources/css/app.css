@@ -222,9 +222,15 @@ select:focus[data-flux-control] {
     .ck-category-card {
         position: relative;
         display: block;
-        min-height: 20rem;
+        min-height: 11rem;
         overflow: hidden;
         background: var(--ck-beige);
+    }
+
+    @media (min-width: 640px) {
+        .ck-category-card {
+            min-height: 15rem;
+        }
     }
 
     .ck-footer-heading {
