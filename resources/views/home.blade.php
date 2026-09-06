@@ -7,10 +7,14 @@
 @section('content')
 
 <style>
-    .home-compact-category-card { min-height: 11rem; }
+    .home-mobile-catalogue-section { padding-block: 3rem; }
+    .home-compact-category-card { min-height: 7rem; }
+    .home-featured-image { aspect-ratio: 1 / 1; }
 
     @media (min-width: 640px) {
-        .home-compact-category-card { min-height: 15rem; }
+        .home-mobile-catalogue-section { padding-block: clamp(4.5rem, 9vw, 7.5rem); }
+        .home-compact-category-card { min-height: 20rem; }
+        .home-featured-image { aspect-ratio: 4 / 5; }
     }
 </style>
 
@@ -48,7 +52,7 @@
     </div>
 </section>
 
-<section id="categories" class="ck-section scroll-mt-28 py-12 sm:py-16 lg:py-20">
+<section id="categories" class="ck-section home-mobile-catalogue-section scroll-mt-28">
     <div class="ck-container">
         <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -58,16 +62,16 @@
             <p class="max-w-xs text-sm leading-6 text-ck-brown">Light control, privacy, comfort and colour—organised into useful collections.</p>
         </div>
 
-        <div data-home-category-grid class="mt-7 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
+        <div data-home-category-grid class="mt-7 grid grid-cols-4 gap-2 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             @foreach ($categories as $category)
                 <a href="{{ route('shop.category', $category) }}" class="ck-category-card home-compact-category-card group">
                     <img src="{{ $category->image ? asset('storage/'.$category->image) : ($categoryImages[$category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $category->name }} collection" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-ck-dark/75 via-ck-dark/12 to-transparent"></div>
-                    <div class="relative flex h-full flex-col justify-end p-4 text-white sm:p-5">
-                        <span class="text-[0.6rem] font-medium tracking-[0.18em] text-white/75 uppercase">Collection</span>
-                        <span class="mt-1.5 flex items-end justify-between font-serif text-xl tracking-[-0.04em] sm:text-2xl">{{ $category->name }} <span class="translate-y-1 text-base transition-transform group-hover:-translate-y-1">↗</span></span>
+                    <div class="relative flex h-full flex-col justify-end p-2 text-white sm:p-6">
+                        <span class="hidden text-[0.6rem] font-medium tracking-[0.18em] text-white/75 uppercase sm:block">Collection</span>
+                        <span class="flex items-end justify-between font-serif text-[0.68rem] leading-tight tracking-[-0.02em] sm:mt-2 sm:text-3xl sm:tracking-[-0.04em]">{{ $category->name }} <span class="hidden translate-y-1 text-lg transition-transform group-hover:-translate-y-1 sm:inline">↗</span></span>
                         @if ($category->children->isNotEmpty())
-                            <span class="mt-2 text-xs leading-5 text-white/80">{{ $category->children->pluck('name')->join(' · ') }}</span>
+                            <span class="mt-2 hidden text-xs leading-5 text-white/80 sm:block">{{ $category->children->pluck('name')->join(' · ') }}</span>
                         @endif
                     </div>
                 </a>
@@ -76,14 +80,14 @@
     </div>
 </section>
 
-<section id="featured" class="ck-section scroll-mt-28 bg-ck-cream py-12 sm:py-16 lg:py-20">
+<section id="featured" class="ck-section home-mobile-catalogue-section scroll-mt-28 bg-ck-cream">
     <div class="ck-container">
         <div class="text-center">
             <p class="ck-eyebrow">Popular choices</p>
             <h2 class="ck-heading mt-3 font-serif">Solutions customers return to.</h2>
         </div>
 
-        <div data-home-featured-grid class="mt-7 grid grid-cols-2 gap-x-3 gap-y-7 sm:mt-8 sm:gap-x-5 lg:grid-cols-4">
+        <div data-home-featured-grid class="mt-7 grid grid-cols-4 gap-x-2 gap-y-5 sm:mt-10 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-4">
             @foreach ($featuredProducts as $product)
                 @php
                     $image = $product->images->first()?->image_path
@@ -92,18 +96,18 @@
                     $price = $product->sale_price ?? $product->price;
                 @endphp
                 <article class="group">
-                    <a href="{{ route('products.show', $product) }}" class="relative block aspect-square overflow-hidden bg-ck-beige" style="aspect-ratio: 1 / 1">
+                    <a href="{{ route('products.show', $product) }}" class="home-featured-image relative block overflow-hidden bg-ck-beige">
                         @if ($product->sale_price)
                             <span class="absolute left-3 top-3 z-10 bg-white px-2.5 py-1 text-[0.58rem] font-medium tracking-[0.15em] text-ck-dark uppercase">Special price</span>
                         @endif
                         <img src="{{ $image }}" alt="{{ $product->images->first()?->alt_text ?: $product->name }}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     </a>
-                    <div class="mt-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                    <div class="mt-2 flex flex-col gap-1 sm:mt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                         <div>
-                            <p class="text-[0.58rem] font-medium tracking-[0.16em] text-ck-brown uppercase">{{ $product->category->name }}</p>
-                            <h3 class="mt-1 font-serif text-lg leading-5 tracking-[-0.025em] sm:text-xl sm:leading-6"><a href="{{ route('products.show', $product) }}" class="transition hover:text-ck-brown">{{ $product->name }}</a></h3>
+                            <p class="hidden text-[0.58rem] font-medium tracking-[0.16em] text-ck-brown uppercase sm:block">{{ $product->category->name }}</p>
+                            <h3 class="font-serif text-[0.68rem] leading-tight tracking-[-0.01em] sm:mt-1 sm:text-xl sm:leading-6 sm:tracking-[-0.025em]"><a href="{{ route('products.show', $product) }}" class="transition hover:text-ck-brown">{{ $product->name }}</a></h3>
                         </div>
-                        <p class="shrink-0 text-sm">KES {{ number_format((float) $price) }}</p>
+                        <p class="shrink-0 text-[0.6rem] leading-tight sm:text-sm">KES {{ number_format((float) $price) }}</p>
                     </div>
                 </article>
             @endforeach
