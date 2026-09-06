@@ -11,6 +11,7 @@ import Superscript from '@tiptap/extension-superscript';
 import CharacterCount from '@tiptap/extension-character-count';
 
 const buttonClass = 'blog-editor-button';
+const editorInstances = new Map();
 
 const createButton = (label, title, run, active = null) => {
     const button = document.createElement('button');
@@ -19,7 +20,11 @@ const createButton = (label, title, run, active = null) => {
     button.textContent = label;
     button.title = title;
     button.setAttribute('aria-label', title);
-    button.addEventListener('click', run);
+    button.addEventListener('mousedown', (event) => event.preventDefault());
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+        run(event);
+    });
 
     if (active) button.dataset.activeCheck = active;
 
@@ -48,8 +53,7 @@ const createGroup = (toolbar, label) => {
 };
 
 const initializeBlogEditor = (root) => {
-    if (root.dataset.editorInitialized === 'true') return;
-    root.dataset.editorInitialized = 'true';
+    if (editorInstances.has(root)) return;
 
     const surface = root.querySelector('[data-editor-surface]');
     const toolbar = root.querySelector('[data-editor-toolbar]');
@@ -59,6 +63,11 @@ const initializeBlogEditor = (root) => {
     const imageTitle = root.querySelector('[data-editor-image-title]');
     const imageError = root.querySelector('[data-editor-image-error]');
     const imageSubmit = root.querySelector('[data-editor-image-submit]');
+    const linkDialog = root.querySelector('[data-editor-link-dialog]');
+    const linkUrl = root.querySelector('[data-editor-link-url]');
+    const linkText = root.querySelector('[data-editor-link-text]');
+    const linkNewTab = root.querySelector('[data-editor-link-new-tab]');
+    const linkError = root.querySelector('[data-editor-link-error]');
     const contentInput = root.querySelector('#content');
     const saveStatus = root.querySelector('[data-editor-save-status]');
 
@@ -130,6 +139,8 @@ const initializeBlogEditor = (root) => {
         onSelectionUpdate: updateActiveButtons,
         onTransaction: updateActiveButtons,
     });
+    editorInstances.set(root, editor);
+    root.dataset.editorInitialized = 'true';
 
     const history = createGroup(toolbar, 'History');
     history.append(
@@ -206,15 +217,13 @@ const initializeBlogEditor = (root) => {
         }),
         createButton('Link', 'Add or edit a link', () => {
             const previous = editor.getAttributes('link');
-            const href = window.prompt('Link URL (internal links may start with /)', previous.href || 'https://');
-            if (! href) return;
             const selected = editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, ' ');
-            const linkText = selected || window.prompt('Link text');
-            if (! linkText) return;
-            const newTab = window.confirm('Open this link in a new tab?');
-            const attributes = { href, target: newTab ? '_blank' : null };
-            if (selected) editor.chain().focus().extendMarkRange('link').setLink(attributes).run();
-            else editor.chain().focus().insertContent({ type: 'text', text: linkText, marks: [{ type: 'link', attrs: attributes }] }).run();
+            linkDialog.dataset.hasSelection = selected ? 'true' : 'false';
+            linkUrl.value = previous.href || '';
+            linkText.value = selected;
+            linkNewTab.checked = previous.target === '_blank';
+            linkError.classList.add('hidden');
+            linkDialog.showModal();
         }),
         createButton('Unlink', 'Remove link', () => editor.chain().focus().extendMarkRange('link').unsetLink().run()),
         createButton('Table', 'Insert a 3 by 3 table', () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()),
@@ -249,13 +258,15 @@ const initializeBlogEditor = (root) => {
         }
 
         const body = new FormData();
-        body.append('image', file);
         body.append('alt', alt);
         body.append('title', imageTitle.value.trim());
         imageSubmit.disabled = true;
-        imageSubmit.textContent = 'Uploading…';
+        imageSubmit.textContent = 'Preparing…';
 
         try {
+            const uploadFile = await prepareImageFile(file);
+            body.append('image', uploadFile);
+            imageSubmit.textContent = 'Uploading…';
             const response = await fetch(root.dataset.uploadUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -269,7 +280,10 @@ const initializeBlogEditor = (root) => {
             const result = await response.json().catch(() => ({}));
             if (! response.ok) {
                 const validationMessage = Object.values(result.errors || {}).flat()[0];
-                throw new Error(validationMessage || result.message || 'The image could not be uploaded.');
+                const fallback = response.status === 413
+                    ? 'The image is too large for the server. Choose a smaller image and try again.'
+                    : 'The image could not be uploaded.';
+                throw new Error(validationMessage || result.message || fallback);
             }
             editor.chain().focus().setImage(result).run();
             input.value = '';
@@ -283,6 +297,26 @@ const initializeBlogEditor = (root) => {
             imageSubmit.disabled = false;
             imageSubmit.textContent = 'Upload and insert';
         }
+    });
+
+    root.querySelector('[data-editor-link-cancel]').addEventListener('click', () => linkDialog.close());
+    root.querySelector('[data-editor-link-submit]').addEventListener('click', () => {
+        const href = linkUrl.value.trim();
+        const text = linkText.value.trim();
+
+        if (! href || ! text) {
+            linkError.textContent = 'Enter both the link URL and the text readers should see.';
+            linkError.classList.remove('hidden');
+            return;
+        }
+
+        const attributes = { href, target: linkNewTab.checked ? '_blank' : null };
+        if (linkDialog.dataset.hasSelection === 'true') {
+            editor.chain().focus().extendMarkRange('link').setLink(attributes).run();
+        } else {
+            editor.chain().focus().insertContent({ type: 'text', text, marks: [{ type: 'link', attrs: attributes }] }).run();
+        }
+        linkDialog.close();
     });
 
     const preview = root.querySelector('[data-editor-preview]');
@@ -311,8 +345,43 @@ const initializeBlogEditor = (root) => {
 };
 
 const initializeBlogEditors = () => {
-    document.querySelectorAll('[data-blog-editor]').forEach(initializeBlogEditor);
+    document.querySelectorAll('[data-blog-editor]').forEach((root) => {
+        try {
+            initializeBlogEditor(root);
+        } catch (error) {
+            root.dataset.editorInitialized = 'failed';
+            const status = root.querySelector('[data-editor-save-status]');
+            if (status) status.textContent = 'Editor failed to start. Refresh this page.';
+            console.error('Blog editor initialization failed.', error);
+        }
+    });
 };
+
+const prepareImageFile = async (file) => {
+    if (file.size <= 1_800_000) return file;
+
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((result) => result ? resolve(result) : reject(new Error('The image could not be prepared.')), 'image/webp', 0.86);
+    });
+
+    return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp' });
+};
+
+document.addEventListener('livewire:navigating', () => {
+    editorInstances.forEach((editor, root) => {
+        editor.destroy();
+        root.removeAttribute('data-editor-initialized');
+    });
+    editorInstances.clear();
+});
 
 document.addEventListener('DOMContentLoaded', initializeBlogEditors);
 document.addEventListener('livewire:navigated', initializeBlogEditors);

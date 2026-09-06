@@ -22,6 +22,7 @@ test('article editor includes search and social seo controls', function () {
         ->assertSee('data-editor-toolbar', false)
         ->assertSee('data-editor-preview-open', false)
         ->assertSee('data-editor-image-dialog', false)
+        ->assertSee('data-editor-link-dialog', false)
         ->assertSee(route('admin.blog.images.store'), false)
         ->assertSee('Frequently asked questions (SEO)')
         ->assertSee('name="faqs[0][question]"', false)

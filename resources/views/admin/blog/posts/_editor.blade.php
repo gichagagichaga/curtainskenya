@@ -45,6 +45,20 @@
         </div>
     </dialog>
 
+    <dialog data-editor-link-dialog class="m-auto w-[min(32rem,calc(100%-2rem))] rounded-2xl bg-white p-0 shadow-2xl backdrop:bg-black/50 dark:bg-zinc-900">
+        <div class="border-b border-zinc-200 px-5 py-4 dark:border-zinc-700"><h2 class="text-lg font-semibold text-zinc-900 dark:text-white">Add or edit link</h2><p class="mt-1 text-sm text-zinc-500">Internal links can start with /, for example /shop or /contact.</p></div>
+        <div class="grid gap-4 px-5 py-5">
+            <div><label for="editor-link-url" class="text-sm font-medium dark:text-white">Link URL</label><input id="editor-link-url" data-editor-link-url placeholder="https:// or /page" class="mt-2 w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"></div>
+            <div><label for="editor-link-text" class="text-sm font-medium dark:text-white">Link text</label><input id="editor-link-text" data-editor-link-text maxlength="255" class="mt-2 w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"></div>
+            <label class="flex items-center gap-2 text-sm dark:text-white"><input data-editor-link-new-tab type="checkbox"> Open in a new tab</label>
+            <p data-editor-link-error class="hidden text-sm text-red-600" role="alert"></p>
+        </div>
+        <div class="flex justify-end gap-3 border-t border-zinc-200 px-5 py-4 dark:border-zinc-700">
+            <button type="button" data-editor-link-cancel class="rounded-lg border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-600 dark:text-white">Cancel</button>
+            <button type="button" data-editor-link-submit class="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-white dark:text-zinc-900">Apply link</button>
+        </div>
+    </dialog>
+
     <dialog data-editor-preview class="m-auto max-h-[90vh] w-[min(62rem,calc(100%-2rem))] rounded-2xl bg-white p-0 shadow-2xl backdrop:bg-black/50 dark:bg-zinc-900">
         <div class="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white px-5 py-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div><p class="text-xs font-semibold tracking-wide text-zinc-500 uppercase">Article preview</p><h2 data-editor-preview-title class="mt-1 font-serif text-xl text-zinc-900 dark:text-white">Untitled article</h2></div>
