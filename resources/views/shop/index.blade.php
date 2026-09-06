@@ -8,13 +8,23 @@
 
 <style>
     .shop-product-image { aspect-ratio: 1 / 1; }
-    .shop-product-title { font-size: 0.68rem; line-height: 1.25; }
-    .shop-product-price { font-size: 0.6rem; line-height: 1.25; }
+    .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .shop-product-title { font-size: 0.78rem; line-height: 1.25; }
+    .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
 
     @media (min-width: 640px) {
         .shop-product-image { aspect-ratio: 4 / 5; }
+        .shop-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .shop-product-title { font-size: 1.125rem; line-height: 1.75rem; }
         .shop-product-price { font-size: 1rem; line-height: 1.5rem; }
+    }
+
+    @media (min-width: 1024px) {
+        .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1280px) {
+        .shop-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
 </style>
 
@@ -67,7 +77,7 @@
 
         @if($products->count())
 
-            <div data-shop-product-grid class="grid grid-cols-4 gap-x-2 gap-y-5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
+            <div data-shop-product-grid class="shop-product-grid grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
 
                 @foreach($products as $product)
 

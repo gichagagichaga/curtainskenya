@@ -8,13 +8,22 @@
 
 <style>
     .home-mobile-catalogue-section { padding-block: 3rem; }
-    .home-compact-category-card { min-height: 7rem; }
+    .home-mobile-category-grid,
+    .home-mobile-featured-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .home-compact-category-card { min-height: 8.5rem; }
     .home-featured-image { aspect-ratio: 1 / 1; }
 
     @media (min-width: 640px) {
         .home-mobile-catalogue-section { padding-block: clamp(4.5rem, 9vw, 7.5rem); }
+        .home-mobile-category-grid,
+        .home-mobile-featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .home-compact-category-card { min-height: 20rem; }
         .home-featured-image { aspect-ratio: 4 / 5; }
+    }
+
+    @media (min-width: 1024px) {
+        .home-mobile-category-grid,
+        .home-mobile-featured-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
 </style>
 
@@ -62,14 +71,14 @@
             <p class="max-w-xs text-sm leading-6 text-ck-brown">Light control, privacy, comfort and colour—organised into useful collections.</p>
         </div>
 
-        <div data-home-category-grid class="mt-7 grid grid-cols-4 gap-2 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <div data-home-category-grid class="home-mobile-category-grid mt-7 grid grid-cols-3 gap-2 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             @foreach ($categories as $category)
                 <a href="{{ route('shop.category', $category) }}" class="ck-category-card home-compact-category-card group">
                     <img src="{{ $category->image ? asset('storage/'.$category->image) : ($categoryImages[$category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $category->name }} collection" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-ck-dark/75 via-ck-dark/12 to-transparent"></div>
                     <div class="relative flex h-full flex-col justify-end p-2 text-white sm:p-6">
                         <span class="hidden text-[0.6rem] font-medium tracking-[0.18em] text-white/75 uppercase sm:block">Collection</span>
-                        <span class="flex items-end justify-between font-serif text-[0.68rem] leading-tight tracking-[-0.02em] sm:mt-2 sm:text-3xl sm:tracking-[-0.04em]">{{ $category->name }} <span class="hidden translate-y-1 text-lg transition-transform group-hover:-translate-y-1 sm:inline">↗</span></span>
+                        <span class="flex items-end justify-between font-serif text-xs leading-tight tracking-[-0.02em] sm:mt-2 sm:text-3xl sm:tracking-[-0.04em]">{{ $category->name }} <span class="hidden translate-y-1 text-lg transition-transform group-hover:-translate-y-1 sm:inline">↗</span></span>
                         @if ($category->children->isNotEmpty())
                             <span class="mt-2 hidden text-xs leading-5 text-white/80 sm:block">{{ $category->children->pluck('name')->join(' · ') }}</span>
                         @endif
@@ -87,7 +96,7 @@
             <h2 class="ck-heading mt-3 font-serif">Solutions customers return to.</h2>
         </div>
 
-        <div data-home-featured-grid class="mt-7 grid grid-cols-4 gap-x-2 gap-y-5 sm:mt-10 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-4">
+        <div data-home-featured-grid class="home-mobile-featured-grid mt-7 grid grid-cols-3 gap-x-2 gap-y-5 sm:mt-10 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-4">
             @foreach ($featuredProducts as $product)
                 @php
                     $image = $product->images->first()?->image_path
