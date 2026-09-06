@@ -6,6 +6,18 @@
 
 @section('content')
 
+<style>
+    .shop-product-image { aspect-ratio: 1 / 1; }
+    .shop-product-title { font-size: 0.68rem; line-height: 1.25; }
+    .shop-product-price { font-size: 0.6rem; line-height: 1.25; }
+
+    @media (min-width: 640px) {
+        .shop-product-image { aspect-ratio: 4 / 5; }
+        .shop-product-title { font-size: 1.125rem; line-height: 1.75rem; }
+        .shop-product-price { font-size: 1rem; line-height: 1.5rem; }
+    }
+</style>
+
 {{-- Page Header --}}
 <section class="bg-[#f3eee7]">
     <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
@@ -55,7 +67,7 @@
 
         @if($products->count())
 
-            <div class="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div data-shop-product-grid class="grid grid-cols-4 gap-x-2 gap-y-5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
 
                 @foreach($products as $product)
 
@@ -64,7 +76,7 @@
                         {{-- Product Image --}}
                         <a
                             href="{{ route('products.show', $product->slug) }}"
-                            class="relative block aspect-[4/5] overflow-hidden bg-[#f3eee7]"
+                            class="shop-product-image relative block overflow-hidden bg-[#f3eee7]"
                         >
 
                             @if($product->images->first())
@@ -106,7 +118,7 @@
 
                             {{-- Sale Badge --}}
                             @if($product->sale_price)
-                                <span class="absolute left-4 top-4 bg-[#29231e] px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-white">
+                                <span class="absolute left-1 top-1 bg-[#29231e] px-1.5 py-1 text-[0.5rem] font-medium uppercase tracking-wider text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-xs">
                                     Sale
                                 </span>
                             @endif
@@ -115,13 +127,13 @@
 
 
                         {{-- Product Information --}}
-                        <div class="mt-5">
+                        <div class="mt-2 sm:mt-5">
 
-                            <p class="text-xs uppercase tracking-[0.18em] text-[#9a8877]">
+                            <p class="hidden text-xs uppercase tracking-[0.18em] text-[#9a8877] sm:block">
                                 {{ $product->category->name }}
                             </p>
 
-                            <h3 class="mt-2 font-serif text-lg text-[#29231e]">
+                            <h3 class="shop-product-title font-serif text-[#29231e] sm:mt-2">
                                 <a
                                     href="{{ route('products.show', $product->slug) }}"
                                     class="transition hover:text-[#8a6a4a]"
@@ -130,13 +142,13 @@
                                 </a>
                             </h3>
 
-                            <p class="mt-2 line-clamp-2 text-sm leading-6 text-[#766b61]">
+                            <p class="mt-2 hidden line-clamp-2 text-sm leading-6 text-[#766b61] sm:block">
                                 {{ $product->short_description }}
                             </p>
 
 
                             {{-- Price --}}
-                            <div class="mt-4 flex items-center gap-3">
+                            <div class="shop-product-price mt-1.5 flex flex-col gap-0.5 sm:mt-4 sm:flex-row sm:items-center sm:gap-3">
 
                                 @if($product->sale_price)
 
@@ -159,12 +171,12 @@
                             </div>
 
                             @if($product->stock_quantity > 0)
-                                <form method="POST" action="{{ route('cart.store', $product) }}" class="mt-5">
+                                <form method="POST" action="{{ route('cart.store', $product) }}" class="mt-5 hidden sm:block">
                                     @csrf
                                     <button class="w-full border border-[#29231e] px-4 py-2.5 text-xs font-medium tracking-[0.14em] text-[#29231e] uppercase transition hover:bg-[#29231e] hover:text-white">Add to bag</button>
                                 </form>
                             @else
-                                <p class="mt-5 text-xs font-medium tracking-[0.14em] text-[#9b8d7f] uppercase">Out of stock</p>
+                                <p class="mt-2 text-[0.55rem] font-medium tracking-[0.08em] text-[#9b8d7f] uppercase sm:mt-5 sm:text-xs sm:tracking-[0.14em]">Out of stock</p>
                             @endif
 
                         </div>

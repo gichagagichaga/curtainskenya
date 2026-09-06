@@ -10,11 +10,17 @@ test('shop views provide links back to the home page', function () {
     $this->get(route('shop.index'))
         ->assertOk()
         ->assertSee('← Home')
+        ->assertSee('data-shop-product-grid', false)
+        ->assertSee('grid-cols-4', false)
+        ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
 
     $this->get(route('shop.category', $category))
         ->assertOk()
         ->assertSee('← Home')
+        ->assertSee('data-shop-product-grid', false)
+        ->assertSee('grid-cols-4', false)
+        ->assertSee('sm:grid-cols-2', false)
         ->assertSee(route('home'), false);
 });
 
