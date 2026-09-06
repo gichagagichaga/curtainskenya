@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
 use App\Models\Service;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -28,6 +29,13 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         View::composer('layouts.public', function ($view): void {
             $view->with('navigationServices', Service::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get());
+            $view->with('navigationCategories', Category::query()
+                ->whereNull('parent_id')
+                ->where('is_active', true)
+                ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')->orderBy('name')])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get());
         });
     }
 

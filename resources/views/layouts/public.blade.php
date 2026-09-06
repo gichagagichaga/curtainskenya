@@ -40,8 +40,13 @@
         Measured for your space <span class="mx-2 text-white/40">•</span> Delivery and fitting across Kenya
     </div>
 
-    <header class="sticky top-0 z-30 border-b border-black/8 bg-white/95 backdrop-blur">
+    <header x-data="{ mobileMenuOpen: false }" class="sticky top-0 z-30 border-b border-black/8 bg-white/95 backdrop-blur">
         <div class="ck-container flex min-h-20 items-center justify-between gap-5">
+            <button type="button" @click="mobileMenuOpen = ! mobileMenuOpen" :aria-expanded="mobileMenuOpen.toString()" aria-controls="mobile-navigation" aria-label="Open navigation" class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-black/10 text-ck-dark lg:hidden">
+                <svg x-show="! mobileMenuOpen" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+                <svg x-cloak x-show="mobileMenuOpen" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            </button>
+
             <a href="{{ route('home') }}" class="group shrink-0" aria-label="Curtains Kenya home">
                 <img src="{{ asset('images/curtains-kenya-logo.png') }}" alt="Curtains Kenya" class="h-14 w-auto max-w-44 object-contain sm:h-16 sm:max-w-52">
             </a>
@@ -81,15 +86,35 @@
             </div>
         </div>
 
-        <nav class="flex overflow-x-auto border-t border-black/6 px-4 py-3 lg:hidden" aria-label="Mobile navigation">
-            <div class="mx-auto flex min-w-max gap-6 text-[0.65rem] font-medium tracking-[0.14em] uppercase">
-                <a href="{{ route('shop.index') }}" @class(['rounded-md px-3 py-2', 'bg-ck-blue text-white shadow-sm' => request()->routeIs('shop.*', 'products.show')]) @if(request()->routeIs('shop.*', 'products.show')) aria-current="page" @endif>Shop</a>
-                <a href="{{ route('home').'#categories' }}" class="ck-section-nav-link" data-section-link="categories">Collections</a>
-                <a href="{{ route('home').'#featured' }}" class="ck-section-nav-link" data-section-link="featured">New arrivals</a>
-                <div class="flex items-center gap-1"><a href="{{ route('home').'#services' }}" class="ck-section-nav-link" data-section-link="services">Our services</a><details class="relative"><summary class="cursor-pointer list-none rounded-md px-2 py-2" aria-label="Show services menu">⌄</summary><div class="absolute left-0 z-50 mt-3 w-72 overflow-hidden rounded-xl border border-black/10 bg-white py-2 shadow-xl">@forelse($navigationServices as $navigationService)<a href="{{ route('services.show', $navigationService) }}" class="block px-4 py-3 text-sm font-medium normal-case tracking-normal text-ck-dark transition hover:bg-[#f3eee7]">{{ $navigationService->name }}</a>@empty<span class="block px-4 py-3 text-sm normal-case tracking-normal text-ck-dark/60">Services coming soon.</span>@endforelse</div></details></div>
-                <a href="{{ route('story') }}" @class(['rounded-md px-3 py-2', 'bg-ck-blue text-white shadow-sm' => request()->routeIs('story')]) @if(request()->routeIs('story')) aria-current="page" @endif>Our story</a>
-                <a href="{{ route('contact') }}" @class(['rounded-md px-3 py-2', 'bg-ck-blue text-white shadow-sm' => request()->routeIs('contact')]) @if(request()->routeIs('contact')) aria-current="page" @endif>Contact</a>
-                <a href="{{ route('blog.index') }}" @class(['rounded-md px-3 py-2', 'bg-ck-blue text-white shadow-sm' => request()->routeIs('blog.*')]) @if(request()->routeIs('blog.*')) aria-current="page" @endif>Journal</a>
+        <form method="GET" action="{{ route('shop.index') }}" role="search" class="border-t border-black/6 bg-ck-dark p-3 lg:hidden">
+            <div class="mx-auto flex max-w-2xl overflow-hidden rounded-lg bg-white shadow-sm">
+                <label for="mobile-shop-category" class="sr-only">Product category</label>
+                <select id="mobile-shop-category" name="category" class="w-28 shrink-0 border-0 border-r border-black/10 bg-white px-3 text-xs text-ck-dark focus:ring-0">
+                    <option value="">All</option>
+                    @foreach ($navigationCategories as $navigationCategory)
+                        <option value="{{ $navigationCategory->id }}" @selected((string) request('category') === (string) $navigationCategory->id)>{{ $navigationCategory->name }}</option>
+                        @foreach ($navigationCategory->children as $navigationSubcategory)
+                            <option value="{{ $navigationSubcategory->id }}" @selected((string) request('category') === (string) $navigationSubcategory->id)>— {{ $navigationSubcategory->name }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+                <label for="mobile-shop-search" class="sr-only">Search products</label>
+                <input id="mobile-shop-search" name="q" value="{{ request('q') }}" type="search" placeholder="Search products" class="min-w-0 flex-1 border-0 px-3 py-3 text-sm focus:ring-0">
+                <button type="submit" aria-label="Search products" class="flex w-12 shrink-0 items-center justify-center bg-ck-blue text-white">
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+                </button>
+            </div>
+        </form>
+
+        <nav id="mobile-navigation" x-cloak x-show="mobileMenuOpen" x-transition class="border-t border-black/6 bg-white px-6 py-4 lg:hidden" aria-label="Mobile navigation">
+            <div class="grid gap-1 text-sm font-medium">
+                <a href="{{ route('shop.index') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Shop</a>
+                <a href="{{ route('home').'#categories' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Collections</a>
+                <a href="{{ route('home').'#featured' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">New arrivals</a>
+                <a href="{{ route('home').'#services' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Our services</a>
+                <a href="{{ route('story') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Our story</a>
+                <a href="{{ route('contact') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Contact</a>
+                <a href="{{ route('blog.index') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Journal</a>
             </div>
         </nav>
     </header>

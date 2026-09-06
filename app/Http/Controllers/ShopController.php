@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ShopController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'category' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('is_active', true)],
+        ]);
+
         $categories = Category::query()
             ->where('is_active', true)
             ->whereNull('parent_id')
@@ -25,8 +32,25 @@ class ShopController extends Controller
         $products = Product::query()
             ->with(['category', 'images'])
             ->where('is_active', true)
+            ->when($filters['q'] ?? null, function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('color', 'like', "%{$search}%")
+                        ->orWhere('short_description', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['category'] ?? null, function ($query, int $categoryId): void {
+                $categoryIds = Category::query()
+                    ->whereKey($categoryId)
+                    ->orWhere('parent_id', $categoryId)
+                    ->pluck('id');
+
+                $query->whereIn('category_id', $categoryIds);
+            })
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return view('shop.index', compact('categories', 'products'));
     }
