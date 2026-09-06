@@ -45,6 +45,26 @@ test('a main category displays its subcategories and their products', function (
         ->assertSee($product->name);
 });
 
+test('sidebar subcategories only expand beneath the selected main category', function () {
+    $curtains = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
+    $sheers = Category::create(['name' => 'Sheers', 'slug' => 'sheers', 'parent_id' => $curtains->id, 'is_active' => true]);
+    $bedding = Category::create(['name' => 'Bedding', 'slug' => 'bedding', 'is_active' => true]);
+    $duvets = Category::create(['name' => 'Duvets', 'slug' => 'duvets', 'parent_id' => $bedding->id, 'is_active' => true]);
+
+    $this->get(route('shop.index'))
+        ->assertOk()
+        ->assertSee('aria-expanded="false"', false)
+        ->assertDontSee('id="shop-subcategories-'.$curtains->id.'"', false)
+        ->assertDontSee('id="shop-subcategories-'.$bedding->id.'"', false);
+
+    $this->get(route('shop.index', ['category' => $curtains->id]))
+        ->assertOk()
+        ->assertSee('aria-expanded="true"', false)
+        ->assertSee('data-shop-subcategory-dropdown', false)
+        ->assertSee('id="shop-subcategories-'.$curtains->id.'"', false)
+        ->assertDontSee('id="shop-subcategories-'.$bedding->id.'"', false);
+});
+
 test('the mobile header provides collapsed navigation and category product search', function () {
     $category = Category::create(['name' => 'Curtains', 'slug' => 'curtains', 'is_active' => true]);
     $subcategory = Category::create(['name' => 'Sheers', 'slug' => 'sheers', 'parent_id' => $category->id, 'is_active' => true]);

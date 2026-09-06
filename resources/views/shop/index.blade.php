@@ -86,10 +86,22 @@
                 <a href="{{ route('shop.index', request()->except('category', 'subcategory', 'page')) }}" class="mt-4 block text-sm font-medium {{ empty($filters['category']) ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}">All products</a>
                 <div class="mt-4 space-y-4">
                     @foreach($categories as $parentCategory)
-                        <div>
-                            <a href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id])) }}" class="block text-sm font-semibold {{ (string) ($filters['category'] ?? '') === (string) $parentCategory->id ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}">{{ $parentCategory->name }}</a>
-                            @if($parentCategory->children->isNotEmpty())
-                                <div class="mt-2 space-y-1.5 border-l border-[#e4ddd5] pl-3">
+                        @php($isSelectedCategory = (string) ($filters['category'] ?? '') === (string) $parentCategory->id)
+                        <div data-shop-category-group="{{ $parentCategory->id }}">
+                            <a
+                                href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id])) }}"
+                                class="flex items-center justify-between gap-2 text-sm font-semibold {{ $isSelectedCategory ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}"
+                                @if($parentCategory->children->isNotEmpty()) aria-expanded="{{ $isSelectedCategory ? 'true' : 'false' }}" aria-controls="shop-subcategories-{{ $parentCategory->id }}" @endif
+                            >
+                                <span>{{ $parentCategory->name }}</span>
+                                @if($parentCategory->children->isNotEmpty())
+                                    <svg class="size-3 shrink-0 transition-transform {{ $isSelectedCategory ? 'rotate-180' : '' }}" aria-hidden="true" viewBox="0 0 12 12" fill="none">
+                                        <path d="m2.5 4.25 3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                @endif
+                            </a>
+                            @if($parentCategory->children->isNotEmpty() && $isSelectedCategory)
+                                <div id="shop-subcategories-{{ $parentCategory->id }}" data-shop-subcategory-dropdown class="mt-2 space-y-1.5 border-l border-[#e4ddd5] pl-3">
                                     @foreach($parentCategory->children as $subcategory)
                                         <a href="{{ route('shop.index', array_merge(request()->except('category', 'subcategory', 'page'), ['category' => $parentCategory->id, 'subcategory' => $subcategory->id])) }}" class="block text-xs leading-5 {{ (string) ($filters['subcategory'] ?? '') === (string) $subcategory->id ? 'font-semibold text-[#8a6a4a]' : 'text-[#665b52] hover:text-[#29231e]' }}">{{ $subcategory->name }}</a>
                                     @endforeach
