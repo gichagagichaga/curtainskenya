@@ -17,7 +17,7 @@
     .shop-product-title { font-size: 0.78rem; line-height: 1.25; }
     .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
     .shop-catalogue-layout { display: grid; gap: 2rem; }
-    .shop-category-sidebar { display: none; }
+    .shop-category-sidebar { display: block; }
 
     @media (min-width: 640px) {
         .shop-product-image { aspect-ratio: 4 / 5; }
@@ -29,8 +29,7 @@
 
     @media (min-width: 1024px) {
         .shop-catalogue-layout { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; }
-        .shop-category-sidebar { display: block; }
-        .shop-mobile-filters { display: none; }
+        .shop-category-sidebar { position: sticky; top: 6rem; }
         .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
@@ -66,7 +65,7 @@
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
 
         <div class="shop-catalogue-layout">
-            <aside class="shop-category-sidebar sticky top-24 border border-[#d8cfc4] bg-white p-5" aria-label="Shop categories">
+            <aside class="shop-category-sidebar border border-[#d8cfc4] bg-white p-5" aria-label="Shop categories">
                 <p class="text-xs font-semibold tracking-[0.18em] text-[#29231e] uppercase">Category</p>
                 <a href="{{ route('shop.index', request()->except('category', 'subcategory', 'page')) }}" class="mt-4 block text-sm font-medium {{ empty($filters['category']) ? 'text-[#8a6a4a]' : 'text-[#29231e]' }}">All products</a>
                 <div class="mt-4 space-y-4">
@@ -83,17 +82,11 @@
                         </div>
                     @endforeach
                 </div>
-            </aside>
 
-            <div class="min-w-0">
-                <div class="shop-mobile-filters mb-4 border border-[#d8cfc4] bg-white p-4">
-                    <p class="text-sm font-semibold text-[#29231e]">Filter products</p>
-                    <p class="mt-1 text-xs text-[#81766c]">Choose a category, subcategory or price range.</p>
-                </div>
-
-                <form method="GET" action="{{ route('shop.index') }}" data-shop-filters class="mb-6 border border-[#d8cfc4] bg-white p-4">
-                    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                        <div class="xl:col-span-2">
+                <form method="GET" action="{{ route('shop.index') }}" data-shop-filters class="mt-6 border-t border-[#d8cfc4] pt-5">
+                    <p class="text-xs font-semibold tracking-[0.18em] text-[#29231e] uppercase">Filter products</p>
+                    <div class="mt-4 space-y-3">
+                        <div>
                             <label for="shop-q" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Search</label>
                             <input id="shop-q" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Search products" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-3 py-2.5 text-sm">
                         </div>
@@ -122,13 +115,13 @@
                             <div><label for="max-price" class="text-[0.65rem] font-semibold tracking-[0.14em] text-[#665b52] uppercase">Max price</label><input id="max-price" name="max_price" type="number" min="0" step="100" value="{{ $filters['max_price'] ?? '' }}" placeholder="Any" class="mt-1.5 block w-full border border-[#d8cfc4] bg-white px-2 py-2.5 text-sm"></div>
                         </div>
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-3">
-                        <button class="bg-[#29231e] px-5 py-2.5 text-xs font-semibold tracking-[0.14em] text-white uppercase">Apply filters</button>
-                        @if(collect($filters)->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty())<a href="{{ route('shop.index') }}" class="text-xs font-semibold text-[#8a6a4a] underline underline-offset-4">Clear filters</a>@endif
-                    </div>
+                    <button class="mt-4 w-full bg-[#29231e] px-4 py-2.5 text-xs font-semibold tracking-[0.14em] text-white uppercase">Apply filters</button>
+                    @if(collect($filters)->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty())<a href="{{ route('shop.index') }}" class="mt-3 block text-center text-xs font-semibold text-[#8a6a4a] underline underline-offset-4">Clear filters</a>@endif
                     @error('max_price')<p class="mt-2 text-sm text-red-700">{{ $message }}</p>@enderror
                 </form>
+            </aside>
 
+            <div class="min-w-0">
         <div class="mb-10 flex items-end justify-between gap-6">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[#8a6a4a]">
