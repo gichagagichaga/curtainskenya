@@ -6,6 +6,14 @@
 
 @section('content')
 
+<style>
+    .home-compact-category-card { min-height: 11rem; }
+
+    @media (min-width: 640px) {
+        .home-compact-category-card { min-height: 15rem; }
+    }
+</style>
+
 @php
     $categoryImages = [
         'curtains' => 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85',
@@ -52,7 +60,7 @@
 
         <div data-home-category-grid class="mt-7 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-4">
             @foreach ($categories as $category)
-                <a href="{{ route('shop.category', $category) }}" class="ck-category-card group">
+                <a href="{{ route('shop.category', $category) }}" class="ck-category-card home-compact-category-card group">
                     <img src="{{ $category->image ? asset('storage/'.$category->image) : ($categoryImages[$category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $category->name }} collection" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-ck-dark/75 via-ck-dark/12 to-transparent"></div>
                     <div class="relative flex h-full flex-col justify-end p-4 text-white sm:p-5">
@@ -84,7 +92,7 @@
                     $price = $product->sale_price ?? $product->price;
                 @endphp
                 <article class="group">
-                    <a href="{{ route('products.show', $product) }}" class="relative block aspect-square overflow-hidden bg-ck-beige">
+                    <a href="{{ route('products.show', $product) }}" class="relative block aspect-square overflow-hidden bg-ck-beige" style="aspect-ratio: 1 / 1">
                         @if ($product->sale_price)
                             <span class="absolute left-3 top-3 z-10 bg-white px-2.5 py-1 text-[0.58rem] font-medium tracking-[0.15em] text-ck-dark uppercase">Special price</span>
                         @endif
