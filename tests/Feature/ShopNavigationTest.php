@@ -13,6 +13,7 @@ test('shop views provide links back to the home page', function () {
         ->assertSee('data-shop-product-grid', false)
         ->assertSee('data-shop-product-card', false)
         ->assertSee('data-shop-filters', false)
+        ->assertSee('grid-template-columns: 7rem minmax(0, 1fr)', false)
         ->assertSee('Subcategory')
         ->assertSee('Min price')
         ->assertSee('Max price')

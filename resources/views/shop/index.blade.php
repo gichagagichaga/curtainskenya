@@ -18,7 +18,7 @@
     .shop-product-price { font-size: 0.68rem; line-height: 1.25; }
     .shop-catalogue-layout {
         display: grid;
-        grid-template-columns: 8.5rem minmax(0, 1fr);
+        grid-template-columns: 7rem minmax(0, 1fr);
         align-items: start;
         gap: 0.75rem;
     }
@@ -28,11 +28,13 @@
         display: block;
         max-height: calc(100svh - 12rem);
         overflow-y: auto;
+        padding: 0.75rem;
     }
     .shop-price-fields { display: grid; gap: 0.5rem; }
 
     @media (min-width: 640px) {
         .shop-catalogue-layout { grid-template-columns: 12rem minmax(0, 1fr); gap: 1.5rem; }
+        .shop-category-sidebar { padding: 1rem; }
         .shop-price-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .shop-product-image { aspect-ratio: 4 / 5; }
         .shop-product-card { padding: 0.75rem; }
@@ -43,7 +45,7 @@
 
     @media (min-width: 1024px) {
         .shop-catalogue-layout { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; }
-        .shop-category-sidebar { top: 6rem; max-height: calc(100vh - 7rem); }
+        .shop-category-sidebar { top: 6rem; max-height: calc(100vh - 7rem); padding: 1.25rem; }
         .shop-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
