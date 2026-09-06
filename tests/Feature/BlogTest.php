@@ -3,6 +3,8 @@
 use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Models\User;
+use Database\Seeders\WhyChooseCurtainsKenyaSeeder;
 
 test('the blog only lists published articles', function () {
     $published = Post::factory()->published()->create(['title' => 'Choosing curtains for a living room']);
@@ -61,4 +63,27 @@ test('sitemap includes published articles and excludes drafts', function () {
         ->assertHeader('Content-Type', 'application/xml')
         ->assertSee($published->slug)
         ->assertDontSee($draft->slug);
+});
+
+test('the why choose curtains kenya cornerstone article is complete and public', function () {
+    User::factory()->create([
+        'email' => 'editor@curtainskenya.com',
+        'role' => User::ROLE_CONTENT_MANAGER,
+    ]);
+
+    $this->seed(WhyChooseCurtainsKenyaSeeder::class);
+
+    $post = Post::query()->where('slug', 'why-choose-curtains-kenya')->firstOrFail();
+
+    expect(str_word_count(strip_tags($post->content)))
+        ->toBeGreaterThanOrEqual(2000)
+        ->and($post->status)->toBe('published')
+        ->and($post->noindex)->toBeFalse()
+        ->and($post->faqs)->toHaveCount(6);
+
+    $this->get(route('blog.show', $post))
+        ->assertOk()
+        ->assertSee('Why Choose Curtains Kenya?')
+        ->assertSee('curtain-measuring-consultation.webp', false)
+        ->assertSee('FAQPage', false);
 });

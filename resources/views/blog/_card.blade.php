@@ -1,7 +1,7 @@
 <article class="overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm">
     <a href="{{ route('blog.show', $post) }}" class="block aspect-[16/10] bg-ck-cream">
         @if ($post->featured_image)
-            <img src="{{ asset('storage/'.$post->featured_image) }}" alt="{{ $post->featured_image_alt }}" class="size-full object-cover" loading="lazy" width="640" height="400">
+            <img src="{{ $post->imageUrl() }}" alt="{{ $post->featured_image_alt }}" class="size-full object-cover" loading="lazy" width="640" height="400">
         @else
             <div class="flex size-full items-center justify-center font-serif text-2xl text-ck-brown">Curtains Kenya Journal</div>
         @endif

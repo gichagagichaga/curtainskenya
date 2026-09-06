@@ -100,6 +100,12 @@ class Post extends Model
 
     public function imageUrl(): ?string
     {
-        return $this->featured_image ? asset('storage/'.$this->featured_image) : null;
+        if (! $this->featured_image) {
+            return null;
+        }
+
+        return Str::startsWith($this->featured_image, ['http://', 'https://', 'images/'])
+            ? asset($this->featured_image)
+            : asset('storage/'.$this->featured_image);
     }
 }
