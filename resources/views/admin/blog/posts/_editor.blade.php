@@ -9,7 +9,7 @@
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <label for="content" class="text-sm font-medium dark:text-white">Article content</label>
-            <p class="mt-1 text-xs text-zinc-500">Format visually using the toolbar. Use one clear article title above, then H2–H4 headings inside the article.</p>
+            <p class="mt-1 text-xs text-zinc-500">Format visually using the toolbar. You can paste from Microsoft Word; headings, paragraphs, emphasis, alignment, lists and tables are cleaned into semantic HTML.</p>
         </div>
         <button type="button" data-editor-preview-open class="rounded-lg border border-zinc-300 px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800">Preview article</button>
     </div>

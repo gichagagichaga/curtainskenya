@@ -464,6 +464,27 @@ select:focus[data-flux-control] {
         white-space: nowrap;
     }
 
+    .ck-article-prose p {
+        line-height: 1.9;
+    }
+
+    .ck-article-prose h2 {
+        margin-top: 2.5rem;
+        font-size: clamp(1.65rem, 3vw, 2.25rem);
+    }
+
+    .ck-article-prose h3 {
+        margin-top: 2rem;
+        font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+    }
+
+    .ck-article-prose blockquote {
+        border-left: 3px solid var(--ck-brown);
+        padding-left: 1.25rem;
+        font-family: var(--font-serif);
+        font-size: 1.25rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .ck-marquee-track {
             animation: none;

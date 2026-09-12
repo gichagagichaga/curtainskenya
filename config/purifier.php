@@ -37,7 +37,7 @@ return [
         'blog' => [
             'HTML.Doctype' => 'HTML 4.01 Transitional',
             'HTML.Allowed' => 'p[style],h1[style],h2[style],h3[style],h4[style],strong,b,em,i,u,s,strike,sub,sup,span[style],a[href|title|target|rel],ul,ol,li,blockquote,pre,code,br,hr,img[src|alt|title|width|height],table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],iframe[src|width|height|allowfullscreen|frameborder],figure,figcaption',
-            'CSS.AllowedProperties' => 'color,background-color,text-align,font-family,font-size,line-height,text-decoration',
+            'CSS.AllowedProperties' => 'color,background-color,text-align,font-family,font-size,font-weight,font-style,line-height,text-decoration',
             'HTML.SafeIframe' => true,
             'URI.SafeIframeRegexp' => '%^https://(www\.)?(youtube\.com/embed/|youtube-nocookie\.com/embed/)%',
             'Attr.AllowedFrameTargets' => ['_blank'],

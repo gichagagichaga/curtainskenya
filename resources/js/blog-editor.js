@@ -52,6 +52,38 @@ const createGroup = (toolbar, label) => {
     return group;
 };
 
+const transformWordHtml = (html) => {
+    if (! html || ! /(?:class=["'][^"']*Mso|mso-|urn:schemas-microsoft)/i.test(html)) return html;
+
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+    parsed.querySelectorAll('meta, link, style, script, xml').forEach((element) => element.remove());
+    parsed.querySelectorAll('*').forEach((element) => {
+        const className = element.getAttribute('class') || '';
+        const style = element.getAttribute('style') || '';
+        const headingLevel = className.match(/MsoHeading([1-4])/i)?.[1]
+            || style.match(/mso-outline-level:\s*([1-4])/i)?.[1];
+
+        if (headingLevel && ['P', 'DIV'].includes(element.tagName)) {
+            const heading = parsed.createElement(`h${headingLevel}`);
+            heading.innerHTML = element.innerHTML;
+            if (style) heading.setAttribute('style', style);
+            element.replaceWith(heading);
+            return;
+        }
+
+        const safeStyles = style.split(';').map((declaration) => declaration.trim()).filter((declaration) => {
+            const property = declaration.split(':', 1)[0]?.trim().toLowerCase();
+            return ['text-align', 'font-family', 'font-size', 'font-weight', 'font-style', 'color', 'background-color', 'text-decoration', 'line-height'].includes(property);
+        });
+        if (safeStyles.length) element.setAttribute('style', safeStyles.join('; '));
+        else element.removeAttribute('style');
+        element.removeAttribute('class');
+        [...element.attributes].filter((attribute) => attribute.name.toLowerCase().startsWith('mso-') || attribute.name.toLowerCase().startsWith('xmlns')).forEach((attribute) => element.removeAttribute(attribute.name));
+    });
+
+    return parsed.body.innerHTML;
+};
+
 const initializeBlogEditor = (root) => {
     if (editorInstances.has(root)) return;
 
@@ -123,6 +155,7 @@ const initializeBlogEditor = (root) => {
             CharacterCount,
         ],
         editorProps: {
+            transformPastedHTML: transformWordHtml,
             attributes: {
                 class: 'blog-editor-document prose prose-zinc max-w-none focus:outline-none dark:prose-invert',
                 role: 'textbox',
