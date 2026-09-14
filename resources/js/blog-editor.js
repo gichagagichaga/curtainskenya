@@ -403,21 +403,26 @@ const initializeBlogEditors = () => {
 };
 
 const prepareImageFile = async (file) => {
-    if (file.size <= 1_800_000) return file;
+    if (file.size <= 1_800_000 || typeof createImageBitmap !== 'function') return file;
 
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
+    try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
 
-    const blob = await new Promise((resolve, reject) => {
-        canvas.toBlob((result) => result ? resolve(result) : reject(new Error('The image could not be prepared.')), 'image/webp', 0.86);
-    });
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob((result) => result ? resolve(result) : reject(new Error('The image could not be prepared.')), 'image/webp', 0.86);
+        });
 
-    return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp' });
+        return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp' });
+    } catch {
+        // Upload the original when this browser cannot decode or compress the image.
+        return file;
+    }
 };
 
 document.addEventListener('livewire:navigating', () => {
