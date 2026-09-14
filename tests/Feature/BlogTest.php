@@ -4,7 +4,18 @@ use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use App\Support\BlogContent;
 use Database\Seeders\WhyChooseCurtainsKenyaSeeder;
+
+test('custom heading typography survives storage and public rendering', function () {
+    $content = BlogContent::prepareForStorage('<h2 style="font-family:Georgia;font-size:24pt;color:#ff6600;font-weight:700;font-style:italic;text-align:center;line-height:1.5;margin-top:18pt;margin-bottom:10pt">Custom curtains</h2>');
+    $post = Post::factory()->published()->create(['content' => $content]);
+
+    $response = $this->get(route('blog.show', $post))->assertOk();
+    foreach (['font-family:Georgia', 'font-size:24pt', 'color:#ff6600', 'margin-top:18pt', 'margin-bottom:10pt'] as $style) {
+        $response->assertSee($style, false);
+    }
+});
 
 test('the blog only lists published articles', function () {
     $published = Post::factory()->published()->create(['title' => 'Choosing curtains for a living room']);

@@ -465,6 +465,7 @@ select:focus[data-flux-control] {
     }
 
     .blog-editor-document h1,
+    .blog-heading-preview h1,
     .ck-article-prose h1 {
         font-size: 2.25rem;
     }
@@ -506,6 +507,29 @@ select:focus[data-flux-control] {
         list-style-type: decimal;
         padding-left: 1.5rem;
     }
+
+    .blog-heading-dialog {
+        margin: auto;
+        width: min(40rem, calc(100% - 2rem));
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        background: white;
+        color: #29231e;
+    }
+    .blog-heading-dialog::backdrop { background: #0008; }
+    .blog-heading-dialog h2 { font-size: 1.4rem; font-weight: 600; }
+    .blog-heading-dialog p { margin-block: 0.75rem; font-size: 0.875rem; }
+    .blog-heading-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-block: 1rem; }
+    .blog-heading-fields label { display: grid; gap: 0.3rem; font-size: 0.875rem; }
+    .blog-heading-fields :is(input, select) { width: 100%; min-height: 2.5rem; border: 1px solid #a8a29e; border-radius: 0.3rem; padding: 0.25rem; }
+    .blog-heading-options, .blog-heading-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1rem; }
+    .blog-heading-actions { justify-content: flex-end; }
+    .blog-heading-actions button { border: 1px solid #a8a29e; border-radius: 0.4rem; padding: 0.5rem 1rem; }
+    .blog-heading-actions [data-apply] { background: #29231e; color: white; }
+    .blog-heading-preview { border: 1px solid #d6d3d1; padding: 1rem; overflow-wrap: anywhere; }
+    .blog-heading-dialog [role="alert"] { color: #b91c1c; }
 
     .ck-article-prose h2 {
         margin-top: 2.5rem;

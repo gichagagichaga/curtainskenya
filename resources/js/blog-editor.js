@@ -1,4 +1,5 @@
 import { Editor } from '@tiptap/core';
+import { HeadingAppearance, installHeadingStyleDialog } from './blog-heading-style';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
@@ -157,6 +158,7 @@ const initializeBlogEditor = (root) => {
         element: surface,
         content: contentInput.value,
         extensions: [
+            HeadingAppearance,
             StarterKit.configure({
                 heading: { levels: [1, 2, 3, 4] },
                 link: {
@@ -237,6 +239,9 @@ const initializeBlogEditor = (root) => {
     );
 
     const colors = createGroup(toolbar, 'Colors');
+    const modifyStyle = createButton('Modify style', 'Modify heading style', () => {});
+    typography.append(modifyStyle);
+    installHeadingStyleDialog(root, editor, modifyStyle);
     const textColor = document.createElement('input');
     textColor.type = 'color';
     textColor.value = '#29231e';
