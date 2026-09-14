@@ -56,6 +56,28 @@ const transformWordHtml = (html) => {
     if (! html || ! /(?:class=["'][^"']*Mso|mso-|urn:schemas-microsoft)/i.test(html)) return html;
 
     const parsed = new DOMParser().parseFromString(html, 'text/html');
+    const headingRules = [];
+    parsed.querySelectorAll('style').forEach((sheet) => {
+        for (const rule of sheet.textContent.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+            const level = rule[2].match(/mso-outline-level:\s*([1-4])\b/i)?.[1];
+            if (level) headingRules.push([rule[1].trim(), level]);
+        }
+    });
+    parsed.querySelectorAll('p, div').forEach((element) => {
+        let level = (element.className || '').match(/(?:Mso)?Heading([1-4])\b/i)?.[1]
+            || (element.getAttribute('style') || '').match(/mso-outline-level:\s*([1-4])\b/i)?.[1];
+        for (const [selector, ruleLevel] of headingRules) {
+            try {
+                if (!level && element.matches(selector)) level = ruleLevel;
+            } catch { /* Ignore unsupported Word selectors. */ }
+        }
+        if (level) {
+            const heading = parsed.createElement(`h${level}`);
+            heading.append(...element.childNodes);
+            heading.setAttribute('style', element.getAttribute('style') || '');
+            element.replaceWith(heading);
+        }
+    });
     parsed.querySelectorAll('meta, link, style, script, xml').forEach((element) => element.remove());
     parsed.querySelectorAll('*').forEach((element) => {
         const className = element.getAttribute('class') || '';
@@ -124,7 +146,7 @@ const initializeBlogEditor = (root) => {
             button.setAttribute('aria-pressed', active.toString());
         });
 
-        if (paragraphStyle) {
+        if (paragraphStyle && document.activeElement !== paragraphStyle) {
             paragraphStyle.value = [1, 2, 3, 4].find((level) => editor.isActive('heading', { level }))?.toString()
                 || (editor.isActive('blockquote') ? 'blockquote' : null)
                 || (editor.isActive('codeBlock') ? 'codeBlock' : 'paragraph');
@@ -194,13 +216,19 @@ const initializeBlogEditor = (root) => {
     );
 
     const typography = createGroup(toolbar, 'Typography');
+    let paragraphSelection;
     paragraphStyle = createSelect('Paragraph and heading style', [['paragraph', 'Paragraph'], ['1', 'Heading 1'], ['2', 'Heading 2'], ['3', 'Heading 3'], ['4', 'Heading 4'], ['blockquote', 'Blockquote'], ['codeBlock', 'Code block']], (value) => {
             const chain = editor.chain().focus();
+            if (paragraphSelection) chain.setTextSelection(paragraphSelection);
             if (value === 'paragraph') chain.setParagraph().run();
             else if (value === 'blockquote') chain.setBlockquote().run();
             else if (value === 'codeBlock') chain.setCodeBlock().run();
             else chain.setHeading({ level: Number(value) }).run();
         });
+    paragraphStyle.addEventListener('focus', () => {
+        const { from, to } = editor.state.selection;
+        paragraphSelection = { from, to };
+    });
     typography.append(
         paragraphStyle,
         createSelect('Font family', [['', 'Default font'], ['Arial', 'Arial'], ['Georgia', 'Georgia'], ['Tahoma', 'Tahoma'], ['Times New Roman', 'Times New Roman'], ['Verdana', 'Verdana']], (value) => value ? editor.chain().focus().setFontFamily(value).run() : editor.chain().focus().unsetFontFamily().run()),

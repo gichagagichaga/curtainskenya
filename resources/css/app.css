@@ -464,8 +464,47 @@ select:focus[data-flux-control] {
         white-space: nowrap;
     }
 
+    .blog-editor-document h1,
+    .ck-article-prose h1 {
+        font-size: 2.25rem;
+    }
+
+    .blog-editor-document h2 {
+        font-size: 1.875rem;
+    }
+
+    .blog-editor-document h3 {
+        font-size: 1.5rem;
+    }
+
+    .blog-editor-document h4,
+    .ck-article-prose h4 {
+        font-size: 1.25rem;
+    }
+
+    .blog-editor-document :is(h1, h2, h3, h4),
+    .ck-article-prose :is(h1, h2, h3, h4) {
+        font-weight: 600;
+        line-height: 1.3;
+        margin-block: 1.5em 0.65em;
+    }
+
+    .blog-editor-document p,
     .ck-article-prose p {
+        margin-block: 0.75em;
         line-height: 1.9;
+    }
+
+    .blog-editor-document ul,
+    .ck-article-prose ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+    }
+
+    .blog-editor-document ol,
+    .ck-article-prose ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
     }
 
     .ck-article-prose h2 {
