@@ -16,6 +16,8 @@ test('article editor includes search and social seo controls', function () {
     $this->actingAs($user)->get(route('admin.blog.posts.create'))
         ->assertOk()
         ->assertSee('SEO and social sharing details')
+        ->assertSee('Publish now')
+        ->assertSee('name="publication_action"', false)
         ->assertSee('name="canonical_url"', false)
         ->assertSee('name="og_title"', false)
         ->assertSee('data-blog-editor', false)
@@ -27,6 +29,25 @@ test('article editor includes search and social seo controls', function () {
         ->assertSee('Frequently asked questions (SEO)')
         ->assertSee('name="faqs[0][question]"', false)
         ->assertSee('name="faqs[0][answer]"', false);
+});
+
+test('publish now makes a draft article publicly visible immediately', function () {
+    $this->travelTo(now()->startOfSecond());
+    $user = User::factory()->create(['role' => User::ROLE_CONTENT_MANAGER]);
+    $post = Post::factory()->create(['status' => 'draft', 'published_at' => null]);
+
+    $this->actingAs($user)->put(route('admin.blog.posts.update', $post), [
+        'title' => $post->title,
+        'slug' => $post->slug,
+        'content' => '<p>Ready for customers.</p>',
+        'status' => 'draft',
+        'published_at' => now()->addWeek()->toDateTimeString(),
+        'publication_action' => 'publish_now',
+    ])->assertSessionHasNoErrors()->assertRedirect(route('admin.blog.posts.edit', $post));
+
+    $this->assertDatabaseHas('posts', ['id' => $post->id, 'status' => 'published', 'published_at' => now()->toDateTimeString()]);
+    $this->travel(1)->seconds();
+    $this->get(route('blog.show', $post))->assertOk()->assertSee('Ready for customers.');
 });
 
 test('rich article html is sanitized before it is stored and rendered', function () {

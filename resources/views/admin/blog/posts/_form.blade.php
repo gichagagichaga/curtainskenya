@@ -1,4 +1,12 @@
 <form method="POST" action="{{ $post ? route('admin.blog.posts.update', $post) : route('admin.blog.posts.store') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+    <div class="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        <span class="text-sm font-medium dark:text-white">{{ $post?->status === 'published' ? ($post->published_at?->isPast() ? 'Published' : 'Scheduled') : 'Draft — not visible to customers' }}</span>
+        <div class="flex flex-wrap gap-3">
+            <button type="submit" class="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:text-white">Save article</button>
+            <button type="submit" name="publication_action" value="publish_now" class="rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white dark:bg-white dark:text-zinc-900">Publish now</button>
+        </div>
+        <p class="w-full text-sm text-zinc-500">Publish now saves your changes and makes this article public immediately. Save article uses the publication status and date below.</p>
+    </div>
 @include('admin.image-metadata', ['record' => $post ?? null, 'prefix' => 'featured_image_', 'skipAlt' => true])
     @csrf @if($post) @method('PUT') @endif
     <div class="space-y-5 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">

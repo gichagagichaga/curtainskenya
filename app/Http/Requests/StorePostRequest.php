@@ -7,6 +7,13 @@ use Illuminate\Validation\Rule;
 
 class StorePostRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->input('publication_action') === 'publish_now') {
+            $this->merge(['status' => 'published', 'published_at' => now()->toDateTimeString()]);
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->user() !== null;
