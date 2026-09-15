@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Support\UploadedImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -82,7 +83,7 @@ class ProductController extends Controller
         $product = DB::transaction(function () use ($request): Product {
             $product = Product::create($this->productData($request));
 
-            $this->storeImages($product, $request->file('images', []), $request->input('alt_texts', []));
+            $this->storeImages($product, $request->file('images', []), $request->input('alt_texts', []), $request->input('image_titles', []), $request->input('image_captions', []));
 
             return $product;
         });
@@ -112,8 +113,11 @@ class ProductController extends Controller
     {
         DB::transaction(function () use ($request, $product): void {
             $product->update($this->productData($request, $product));
+            foreach ($request->validated('existing_image_metadata', []) as $id => $metadata) {
+                $product->images()->whereKey($id)->update($metadata);
+            }
 
-            $this->storeImages($product, $request->file('images', []), $request->input('alt_texts', []));
+            $this->storeImages($product, $request->file('images', []), $request->input('alt_texts', []), $request->input('image_titles', []), $request->input('image_captions', []));
         });
 
         return redirect()
@@ -183,7 +187,7 @@ class ProductController extends Controller
      */
     private function productData(StoreProductRequest|UpdateProductRequest $request, ?Product $product = null): array
     {
-        $data = $request->safe()->except(['parent_category_id', 'images', 'alt_texts', 'is_featured', 'is_active']);
+        $data = $request->safe()->except(['existing_image_metadata', 'parent_category_id', 'images', 'alt_texts', 'image_titles', 'image_captions', 'is_featured', 'is_active']);
         $data['slug'] = $this->uniqueSlug($data['name'], $product);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active'] = $request->boolean('is_active');
@@ -195,14 +199,16 @@ class ProductController extends Controller
      * @param  array<int, UploadedFile>  $images
      * @param  array<int, string|null>  $altTexts
      */
-    private function storeImages(Product $product, array $images, array $altTexts): void
+    private function storeImages(Product $product, array $images, array $altTexts, array $titles, array $captions): void
     {
         $sortOrder = (int) $product->images()->max('sort_order') + 1;
 
         foreach ($images as $index => $image) {
             $product->images()->create([
-                'image_path' => $image->store('products', 'public'),
+                'image_path' => UploadedImage::store($image, 'products'),
                 'alt_text' => $altTexts[$index] ?? null,
+                'image_title' => $titles[$index] ?? null,
+                'image_caption' => $captions[$index] ?? null,
                 'sort_order' => $sortOrder++,
             ]);
         }

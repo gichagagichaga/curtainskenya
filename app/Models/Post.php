@@ -15,7 +15,7 @@ class Post extends Model
     /** @use HasFactory<PostFactory> */
     use HasFactory;
 
-    protected $fillable = [
+    protected $fillable = ['featured_image_title', 'featured_image_caption',
         'author_id',
         'blog_category_id',
         'title',

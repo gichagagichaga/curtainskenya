@@ -1,4 +1,5 @@
 <form method="POST" action="{{ $post ? route('admin.blog.posts.update', $post) : route('admin.blog.posts.store') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
+@include('admin.image-metadata', ['record' => $post ?? null, 'prefix' => 'featured_image_', 'skipAlt' => true])
     @csrf @if($post) @method('PUT') @endif
     <div class="space-y-5 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
         <div><label for="title" class="text-sm font-medium dark:text-white">Article title</label><input id="title" name="title" required value="{{ old('title', $post?->title) }}" class="mt-2 w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800">@error('title')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror</div>

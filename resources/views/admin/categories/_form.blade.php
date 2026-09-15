@@ -1,6 +1,7 @@
 @php($subcategoryMode = $subcategoryMode ?? false)
 <form method="POST" action="{{ $category ? route('admin.categories.update', $category) : ($subcategoryMode ? route('admin.subcategories.store') : route('admin.categories.store')) }}" enctype="multipart/form-data" class="mt-6 space-y-6">
     @csrf
+    @include('admin.image-metadata', ['record' => $category ?? null])
     @if ($category) @method('PUT') @endif
 
     <div class="grid gap-6 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">

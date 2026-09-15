@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
+use App\Support\UploadedImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -88,7 +89,7 @@ class ClientController extends Controller
         $data = [...$request->safe()->except(['is_active', 'image']), 'is_active' => $request->boolean('is_active')];
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('clients', 'public');
+            $data['image'] = UploadedImage::store($request->file('image'), 'clients');
         } elseif ($client) {
             $data['image'] = $client->image;
         }

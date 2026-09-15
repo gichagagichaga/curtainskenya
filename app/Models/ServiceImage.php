@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServiceImage extends Model
 {
-    protected $fillable = ['service_id', 'image_path', 'sort_order'];
+    protected $fillable = ['alt_text', 'image_title', 'image_caption', 'service_id', 'image_path', 'sort_order'];
 
     protected function casts(): array
     {

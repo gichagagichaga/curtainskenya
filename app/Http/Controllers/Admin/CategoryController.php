@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\StoreSubcategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Support\UploadedImage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -54,7 +55,7 @@ class CategoryController extends Controller
         $subcategory = Category::create($this->categoryData($request));
 
         if ($request->hasFile('image')) {
-            $subcategory->update(['image' => $request->file('image')->store('categories', 'public')]);
+            $subcategory->update(['image' => UploadedImage::store($request->file('image'), 'categories')]);
         }
 
         return redirect()->route('admin.categories.edit', $subcategory)->with('status', 'Subcategory created successfully.');
@@ -78,7 +79,7 @@ class CategoryController extends Controller
         $category = Category::create($this->categoryData($request));
 
         if ($request->hasFile('image')) {
-            $category->update(['image' => $request->file('image')->store('categories', 'public')]);
+            $category->update(['image' => UploadedImage::store($request->file('image'), 'categories')]);
         }
 
         return redirect()->route('admin.categories.edit', $category)->with('status', 'Category created successfully.');
@@ -101,7 +102,7 @@ class CategoryController extends Controller
         $category->update($this->categoryData($request, $category));
 
         if ($request->hasFile('image')) {
-            $category->update(['image' => $request->file('image')->store('categories', 'public')]);
+            $category->update(['image' => UploadedImage::store($request->file('image'), 'categories')]);
 
             if ($oldImagePath) {
                 Storage::disk('public')->delete($oldImagePath);

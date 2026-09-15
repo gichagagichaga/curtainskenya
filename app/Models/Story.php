@@ -11,7 +11,7 @@ class Story extends Model
     /** @use HasFactory<StoryFactory> */
     use HasFactory;
 
-    protected $fillable = [
+    protected $fillable = ['image_title', 'image_caption',
         'eyebrow',
         'title',
         'intro',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateStoryRequest;
 use App\Models\Story;
+use App\Support\UploadedImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -23,7 +24,7 @@ class StoryController extends Controller
         $data = $request->safe()->except('image');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('story', 'public');
+            $data['image'] = UploadedImage::store($request->file('image'), 'story');
         }
 
         $story->fill($data)->save();

@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Support\BlogContent;
+use App\Support\UploadedImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -89,14 +90,16 @@ class BlogPostController extends Controller
             'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'alt' => ['required', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
+            'caption' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $path = $request->file('image')->store('blog/content', 'public');
+        $path = UploadedImage::store($request->file('image'), 'blog/content');
 
         return response()->json([
             'url' => Storage::disk('public')->url($path),
             'alt' => $validated['alt'],
             'title' => $validated['title'] ?? null,
+            'caption' => $validated['caption'] ?? null,
         ]);
     }
 
@@ -129,7 +132,7 @@ class BlogPostController extends Controller
         $data['published_at'] = $data['status'] === 'published' ? ($data['published_at'] ?? $post?->published_at ?? now()) : null;
 
         if ($request->hasFile('featured_image')) {
-            $data['featured_image'] = $request->file('featured_image')->store('blog', 'public');
+            $data['featured_image'] = UploadedImage::store($request->file('featured_image'), 'blog');
         }
 
         return $data;

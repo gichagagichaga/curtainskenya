@@ -80,7 +80,7 @@
         <div data-home-category-grid class="home-mobile-category-grid mt-7 grid grid-cols-3 gap-2 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             @foreach ($categories as $category)
                 <a href="{{ route('shop.category', $category) }}" class="ck-category-card home-compact-category-card group">
-                    <img src="{{ $category->image ? asset('storage/'.$category->image) : ($categoryImages[$category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $category->name }} collection" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                    <img title="{{ $category?->image_title }}" src="{{ $category->image ? asset('storage/'.$category->image) : ($categoryImages[$category->slug] ?? 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=900&q=85') }}" alt="{{ $category->image_alt ?: $category->name }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">@if($category?->image_caption)<span style="position:absolute;top:0;left:0;right:0;z-index:2" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $category?->image_caption }}</span>@endif
                     <div class="absolute inset-0 bg-gradient-to-t from-ck-dark/75 via-ck-dark/12 to-transparent"></div>
                     <div class="relative flex h-full flex-col justify-end p-2 text-white sm:p-6">
                         <span class="hidden text-[0.6rem] font-medium tracking-[0.18em] text-white/75 uppercase sm:block">Collection</span>
@@ -115,7 +115,7 @@
                         @if ($product->sale_price)
                             <span class="absolute left-3 top-3 z-10 bg-white px-2.5 py-1 text-[0.58rem] font-medium tracking-[0.15em] text-ck-dark uppercase">Special price</span>
                         @endif
-                        <img src="{{ $image }}" alt="{{ $product->images->first()?->alt_text ?: $product->name }}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+                        <img title="{{ $product->images->first()?->image_title }}" src="{{ $image }}" alt="{{ $product->images->first()?->alt_text ?: $product->name }}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">@if($product->images->first()?->image_caption)<span style="position:absolute;bottom:0;left:0;right:0;z-index:2" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $product->images->first()?->image_caption }}</span>@endif
                     </a>
                     <div class="mt-2 flex flex-col gap-1 sm:mt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                         <div>
@@ -142,7 +142,7 @@
                     <article class="group overflow-hidden rounded-2xl bg-ck-cream">
                         <a href="{{ route('services.show', $service) }}" class="block" aria-label="Explore {{ $service->name }}">
                             @if($service->images->first())
-                                <img src="{{ asset('storage/'.$service->images->first()->image_path) }}" alt="{{ $service->name }}" loading="lazy" class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-105">
+                                <img title="{{ $service->images->first()?->image_title }}" src="{{ asset('storage/'.$service->images->first()->image_path) }}" alt="{{ $service->images->first()?->alt_text ?: $service->name }}" loading="lazy" class="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-105">@if($service->images->first()?->image_caption)<span style="position:relative;z-index:2" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $service->images->first()?->image_caption }}</span>@endif
                             @else
                                 <div class="flex aspect-[4/3] items-center justify-center bg-ck-beige px-6 text-center font-serif text-3xl text-ck-dark/65">{{ $service->name }}</div>
                             @endif
@@ -160,7 +160,7 @@
 <section id="about" class="ck-section scroll-mt-28">
     <div class="ck-container grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
         <div class="relative aspect-[4/5] overflow-hidden bg-ck-beige">
-            <img src="{{ $story?->image ? asset('storage/'.$story->image) : 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85' }}" alt="{{ $story?->image_alt ?: 'Warm, texture-led living space' }}" loading="lazy" class="h-full w-full object-cover">
+            <img title="{{ $story?->image_title }}" src="{{ $story?->image ? asset('storage/'.$story->image) : 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85' }}" alt="{{ $story?->image_alt ?: 'Our story' }}" loading="lazy" class="h-full w-full object-cover">@if($story?->image_caption)<span style="position:relative;transform:translateY(-100%);z-index:2" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $story?->image_caption }}</span>@endif
             <div class="absolute bottom-0 left-0 bg-white px-5 py-4 text-[0.6rem] font-medium tracking-[0.15em] text-ck-dark uppercase">Thoughtful textures, calm spaces</div>
         </div>
         <div class="max-w-lg">
@@ -182,7 +182,7 @@
         <div class="mt-8 overflow-hidden" aria-label="Our clients">
             <div class="ck-marquee-track ck-marquee-track-slow">
                 @foreach($clients as $client)
-                    <article class="ck-key-client-slide">@if($client->image)<img src="{{ asset('storage/'.$client->image) }}" alt="{{ $client->name }} logo or project" class="ck-key-client-logo">@endif<span>{{ $client->name }}</span></article>
+                    <article class="ck-key-client-slide">@if($client->image)<img title="{{ $client?->image_title }}" src="{{ asset('storage/'.$client->image) }}" alt="{{ $client->image_alt ?: $client->name }}" class="ck-key-client-logo">@if($client?->image_caption)<span style="position:relative;z-index:2" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $client?->image_caption }}</span>@endif@endif<span>{{ $client->name }}</span></article>
                 @endforeach
             </div>
         </div>

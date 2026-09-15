@@ -20,6 +20,13 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'existing_image_metadata' => ['nullable', 'array'],
+            'existing_image_metadata.*' => ['array:alt_text,image_title,image_caption'],
+            'existing_image_metadata.*.*' => ['nullable', 'string', 'max:255'],
+            'image_titles' => ['nullable', 'array'],
+            'image_titles.*' => ['nullable', 'string', 'max:255'],
+            'image_captions' => ['nullable', 'array'],
+            'image_captions.*' => ['nullable', 'string', 'max:255'],
             'parent_category_id' => ['required', 'integer', Rule::exists('categories', 'id')->whereNull('parent_id')],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],

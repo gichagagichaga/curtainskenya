@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
-    protected $fillable = ['name', 'image', 'is_active', 'sort_order'];
+    protected $fillable = ['image_alt', 'image_title', 'image_caption', 'name', 'image', 'is_active', 'sort_order'];
 
     protected function casts(): array
     {

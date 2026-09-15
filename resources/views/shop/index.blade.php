@@ -184,9 +184,9 @@
 
                             @if($product->images->first())
 
-                                <img
+                                <img title="{{ $product->images->first()?->image_title }}"
                                     src="{{ asset('storage/' . $product->images->first()->image_path) }}"
-                                    alt="{{ $product->images->first()->alt_text ?: $product->name }}"
+                                    alt="{{ $product->images->first()?->alt_text ?: $product->name }}"
                                     class="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                                 >
 

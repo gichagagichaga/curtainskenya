@@ -51,7 +51,7 @@
                 @if($product->images->count())
 
                     <div
-                        x-data="{ selectedImage: @js(['src' => asset('storage/'.$product->images->first()->image_path), 'alt' => $product->images->first()->alt_text ?: $product->name]), zooming: false, zoomX: 50, zoomY: 50 }"
+                        x-data="{ selectedImage: @js(['src' => asset('storage/'.$product->images->first()->image_path), 'title' => $product->images->first()->image_title, 'caption' => $product->images->first()->image_caption, 'alt' => $product->images->first()->alt_text ?: $product->name]), zooming: false, zoomX: 50, zoomY: 50 }"
                     >
                         <div
                             @mouseenter="zooming = true"
@@ -62,6 +62,7 @@
                             <img
                                 :src="selectedImage.src"
                                 :alt="selectedImage.alt"
+                                :title="selectedImage.title"
                                 :style="zooming ? `transform: scale(2.2); transform-origin: ${zoomX}% ${zoomY}%` : ''"
                                 class="aspect-[4/5] h-full w-full object-cover transition-transform duration-150"
                             >
@@ -69,6 +70,7 @@
                                 Move to inspect fabric detail
                             </span>
                         </div>
+                        <p x-show="selectedImage.caption" x-text="selectedImage.caption" class="mt-2 text-sm text-zinc-600"></p>
                         <p class="mt-3 text-center text-xs font-medium tracking-[0.14em] text-[#8b7d70] uppercase">Hover to zoom and inspect fabric detail</p>
 
                         @if($product->images->count() > 1)
@@ -76,12 +78,12 @@
                                 @foreach($product->images as $image)
                                     <button
                                         type="button"
-                                        @click="selectedImage = @js(['src' => asset('storage/'.$image->image_path), 'alt' => $image->alt_text ?: $product->name])"
+                                        @click="selectedImage = @js(['src' => asset('storage/'.$image->image_path), 'title' => $image->image_title, 'caption' => $image->image_caption, 'alt' => $image->alt_text ?: $product->name])"
                                         :class="selectedImage.src === '{{ asset('storage/'.$image->image_path) }}' ? 'ring-2 ring-[#8a6a4a] ring-offset-2' : 'ring-1 ring-black/8'"
                                         class="overflow-hidden bg-[#f3eee7] focus:outline-hidden focus:ring-2 focus:ring-[#8a6a4a] focus:ring-offset-2"
                                         aria-label="Show {{ $image->alt_text ?: $product->name }}"
                                     >
-                                    <img
+                                    <img title="{{ $image?->image_title }}"
                                         src="{{ asset('storage/' . $image->image_path) }}"
                                         alt="{{ $image->alt_text ?: $product->name }}"
                                             class="aspect-square h-full w-full object-cover transition duration-200 hover:scale-105"

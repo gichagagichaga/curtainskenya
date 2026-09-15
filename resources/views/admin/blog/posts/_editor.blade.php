@@ -37,6 +37,7 @@
             <div><label for="editor-image-file" class="text-sm font-medium dark:text-white">Image file</label><input id="editor-image-file" data-editor-image-input type="file" accept="image/jpeg,image/png,image/webp" class="mt-2 block w-full text-sm dark:text-zinc-200"></div>
             <div><label for="editor-image-alt" class="text-sm font-medium dark:text-white">Alt text</label><input id="editor-image-alt" data-editor-image-alt maxlength="255" placeholder="Describe what is shown in the image" class="mt-2 w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"></div>
             <div><label for="editor-image-title" class="text-sm font-medium dark:text-white">Image title <span class="font-normal text-zinc-500">(optional)</span></label><input id="editor-image-title" data-editor-image-title maxlength="255" placeholder="Optional title or caption" class="mt-2 w-full rounded-lg border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"></div>
+            <label class="text-sm">Caption (optional)<input data-editor-image-caption maxlength="255" class="mt-2 w-full rounded-lg border-zinc-300 dark:bg-zinc-800 dark:text-white"></label>
             <p data-editor-image-error class="hidden text-sm text-red-600" role="alert"></p>
         </div>
         <div class="flex justify-end gap-3 border-t border-zinc-200 px-5 py-4 dark:border-zinc-700">

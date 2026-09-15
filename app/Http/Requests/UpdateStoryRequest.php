@@ -14,6 +14,8 @@ class UpdateStoryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'image_title' => ['nullable', 'string', 'max:255'],
+            'image_caption' => ['nullable', 'string', 'max:255'],
             'eyebrow' => ['nullable', 'string', 'max:100'],
             'title' => ['required', 'string', 'max:255'],
             'intro' => ['required', 'string', 'max:1000'],

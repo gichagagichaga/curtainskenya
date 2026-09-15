@@ -24,6 +24,7 @@
             <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 @foreach($service->images as $image)
                     <div class="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700"><img src="{{ asset('storage/'.$image->image_path) }}" alt="" class="h-28 w-full object-cover"><form method="POST" action="{{ route('admin.services.images.destroy', [$service, $image]) }}" onsubmit="return confirm('Remove this image?')" class="absolute right-2 top-2">@csrf @method('DELETE')<button class="rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-red-700 shadow">Remove</button></form></div>
+    @include('admin.gallery-metadata', ['record' => $service ?? null])
                 @endforeach
             </div>
         @endif

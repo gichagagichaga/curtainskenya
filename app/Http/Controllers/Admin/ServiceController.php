@@ -7,6 +7,7 @@ use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Models\Service;
 use App\Models\ServiceImage;
+use App\Support\UploadedImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,7 +37,7 @@ class ServiceController extends Controller
     public function store(StoreServiceRequest $request): RedirectResponse
     {
         $service = Service::create($this->data($request));
-        $this->storeImages($service, $request->file('images', []));
+        $this->storeImages($service, $request->file('images', []), $request->input('alt_texts', []), $request->input('image_titles', []), $request->input('image_captions', []));
 
         return redirect()->route('admin.services.edit', $service)->with('status', 'Service created successfully.');
     }
@@ -60,7 +61,10 @@ class ServiceController extends Controller
     public function update(UpdateServiceRequest $request, Service $service): RedirectResponse
     {
         $service->update($this->data($request, $service));
-        $this->storeImages($service, $request->file('images', []));
+        foreach ($request->validated('existing_image_metadata', []) as $id => $metadata) {
+            $service->images()->whereKey($id)->update($metadata);
+        }
+        $this->storeImages($service, $request->file('images', []), $request->input('alt_texts', []), $request->input('image_titles', []), $request->input('image_captions', []));
 
         return redirect()->route('admin.services.edit', $service)->with('status', 'Service updated successfully.');
     }
@@ -91,19 +95,22 @@ class ServiceController extends Controller
 
     private function data(StoreServiceRequest|UpdateServiceRequest $request, ?Service $service = null): array
     {
-        $data = [...$request->safe()->except(['is_active', 'images']), 'is_active' => $request->boolean('is_active')];
+        $data = [...$request->safe()->except(['existing_image_metadata', 'is_active', 'images', 'alt_texts', 'image_titles', 'image_captions']), 'is_active' => $request->boolean('is_active')];
         $data['slug'] = $this->uniqueSlug($data['name'], $service);
 
         return $data;
     }
 
-    private function storeImages(Service $service, array $images): void
+    private function storeImages(Service $service, array $images, array $altTexts, array $titles, array $captions): void
     {
         $sortOrder = (int) $service->images()->max('sort_order') + 1;
 
-        foreach ($images as $image) {
+        foreach ($images as $index => $image) {
             $service->images()->create([
-                'image_path' => $image->store('services', 'public'),
+                'image_path' => UploadedImage::store($image, 'services'),
+                'alt_text' => $altTexts[$index] ?? null,
+                'image_title' => $titles[$index] ?? null,
+                'image_caption' => $captions[$index] ?? null,
                 'sort_order' => $sortOrder++,
             ]);
         }

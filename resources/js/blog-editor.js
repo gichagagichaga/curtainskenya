@@ -1,10 +1,11 @@
 import { Editor } from '@tiptap/core';
+import { colorMenu } from './editor-colors';
 import { HeadingAppearance, installHeadingStyleDialog } from './blog-heading-style';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
-import Image from '@tiptap/extension-image';
+import { ArticleImage, ArticleYoutube, installVideoDialog } from './blog-media';
 import { TableKit } from '@tiptap/extension-table';
-import Youtube from '@tiptap/extension-youtube';
+
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
 import Subscript from '@tiptap/extension-subscript';
@@ -171,9 +172,9 @@ const initializeBlogEditor = (root) => {
             TextStyleKit,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Highlight.configure({ multicolor: true }),
-            Image.configure({ allowBase64: false, inline: false }),
+            ArticleImage.configure({ allowBase64: false, inline: false }),
             TableKit.configure({ table: { resizable: true } }),
-            Youtube.configure({ nocookie: true, modestBranding: true }),
+            ArticleYoutube.configure({ nocookie: true, modestBranding: true }),
             Subscript,
             Superscript,
             CharacterCount,
@@ -225,7 +226,14 @@ const initializeBlogEditor = (root) => {
             if (value === 'paragraph') chain.setParagraph().run();
             else if (value === 'blockquote') chain.setBlockquote().run();
             else if (value === 'codeBlock') chain.setCodeBlock().run();
-            else chain.setHeading({ level: Number(value) }).run();
+            else {
+                const level = Number(value);
+                let style = {};
+                editor.state.doc.descendants((node) => {
+                    if (node.type.name === 'heading' && node.attrs.level === level && !style.level) style = { ...node.attrs };
+                });
+                chain.setHeading({ level }).updateAttributes('heading', { ...style, level }).run();
+            }
         });
     paragraphStyle.addEventListener('focus', () => {
         const { from, to } = editor.state.selection;
@@ -242,19 +250,10 @@ const initializeBlogEditor = (root) => {
     const modifyStyle = createButton('Modify style', 'Modify heading style', () => {});
     typography.append(modifyStyle);
     installHeadingStyleDialog(root, editor, modifyStyle);
-    const textColor = document.createElement('input');
-    textColor.type = 'color';
-    textColor.value = '#29231e';
-    textColor.className = 'blog-editor-color';
-    textColor.title = 'Text color';
-    textColor.setAttribute('aria-label', 'Text color');
-    textColor.addEventListener('input', () => editor.chain().focus().setColor(textColor.value).run());
-    const highlightColor = textColor.cloneNode();
-    highlightColor.value = '#fff1a8';
-    highlightColor.title = 'Highlight color';
-    highlightColor.setAttribute('aria-label', 'Highlight color');
-    highlightColor.addEventListener('input', () => editor.chain().focus().setHighlight({ color: highlightColor.value }).run());
-    colors.append(textColor, highlightColor);
+    colors.append(
+        colorMenu('Text colour', value => value ? editor.chain().focus().setColor(value).run() : editor.chain().focus().unsetColor().run()),
+        colorMenu('Highlight', value => value ? editor.chain().focus().setHighlight({ color: value }).run() : editor.chain().focus().unsetHighlight().run()),
+    );
 
     const alignment = createGroup(toolbar, 'Alignment');
     [['Left', 'left'], ['Center', 'center'], ['Right', 'right'], ['Justify', 'justify']].forEach(([label, value]) => {
@@ -299,11 +298,13 @@ const initializeBlogEditor = (root) => {
         createButton('− Column', 'Delete the current table column', () => editor.chain().focus().deleteColumn().run()),
         createButton('Delete table', 'Delete the current table', () => editor.chain().focus().deleteTable().run()),
         createButton('—', 'Insert horizontal line', () => editor.chain().focus().setHorizontalRule().run()),
-        createButton('YouTube', 'Embed a YouTube video', () => {
-            const src = window.prompt('YouTube video URL');
-            if (src) editor.chain().focus().setYoutubeVideo({ src, width: 640, height: 360 }).run();
-        }),
+
     );
+
+    const videoButton = createButton('YouTube', 'Insert or edit YouTube video', () => {});
+    const deleteVideoButton = createButton('Delete video', 'Select a video then delete it', () => {});
+    insertion.append(videoButton, deleteVideoButton);
+    installVideoDialog(root, editor, videoButton, deleteVideoButton);
 
     uploadButton.replaceWith(createButton('Upload image', 'Upload an image with alt text', () => {
         imageError.classList.add('hidden');
@@ -326,11 +327,12 @@ const initializeBlogEditor = (root) => {
         const body = new FormData();
         body.append('alt', alt);
         body.append('title', imageTitle.value.trim());
+        body.append('caption', root.querySelector('[data-editor-image-caption]').value.trim());
         imageSubmit.disabled = true;
         imageSubmit.textContent = 'Preparing…';
 
         try {
-            const uploadFile = await prepareImageFile(file);
+            const uploadFile = file;
             body.append('image', uploadFile);
             imageSubmit.textContent = 'Uploading…';
             const response = await fetch(root.dataset.uploadUrl, {
@@ -351,10 +353,11 @@ const initializeBlogEditor = (root) => {
                     : 'The image could not be uploaded.';
                 throw new Error(validationMessage || result.message || fallback);
             }
-            editor.chain().focus().setImage(result).run();
+            editor.chain().focus().setImage({ ...result, src: result.url }).run();
             input.value = '';
             imageAlt.value = '';
             imageTitle.value = '';
+            root.querySelector('[data-editor-image-caption]').value = '';
             imageDialog.close();
         } catch (error) {
             imageError.textContent = error.message;

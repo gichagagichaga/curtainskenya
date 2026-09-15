@@ -1,6 +1,12 @@
 import { Extension } from '@tiptap/core';
+import { colorMenu } from './editor-colors';
 
-const properties = ['font-family', 'font-size', 'color', 'font-weight', 'font-style', 'text-decoration', 'line-height', 'margin-top', 'margin-bottom'];
+const properties = ['font-family', 'font-size', 'color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'line-height', 'margin-top', 'margin-bottom'];
+
+const paletteValue = (value) => {
+    const rgb = (value || '').match(/^rgb\(\s*(\d+)[, ]+\s*(\d+)[, ]+\s*(\d+)\s*\)$/);
+    return rgb ? '#' + rgb.slice(1).map(channel => Number(channel).toString(16).padStart(2, '0')).join('') : (value || '').toLowerCase();
+};
 
 export const HeadingAppearance = Extension.create({
     name: 'headingAppearance',
@@ -35,12 +41,23 @@ export function installHeadingStyleDialog(root, editor, button) {
         <p data-style-error role="alert"></p>
         <div class="blog-heading-actions"><button type="button" data-cancel>Cancel</button><button type="button" data-apply>Apply style</button></div>`;
     root.append(dialog);
+    for (const [name, label, initial] of [['color', 'Text colour', '#000000'], ['background-color', 'No highlight', '']]) {
+        const menu = colorMenu(label, () => preview(), initial);
+        menu.dataset.field = name;
+        if (name === 'color') dialog.querySelector('[data-field="color"]').replaceWith(menu);
+        else {
+            const wrapper = document.createElement('label');
+            wrapper.append('Highlight', menu);
+            dialog.querySelector('.blog-heading-fields').append(wrapper);
+        }
+    }
     const field = (name) => dialog.querySelector(`[data-field="${name}"]`);
     let selection;
     const attributes = () => ({
         'font-family': field('font-family').value,
         'font-size': `${field('font-size').value}pt`,
         color: field('color').value,
+        'background-color': field('background-color').value || null,
         'font-weight': field('font-weight').checked ? '700' : '400',
         'font-style': field('font-style').checked ? 'italic' : 'normal',
         'text-decoration': field('text-decoration').checked ? 'underline' : 'none',
@@ -51,7 +68,7 @@ export function installHeadingStyleDialog(root, editor, button) {
     });
     const preview = () => {
         const element = dialog.querySelector('[data-style-preview]');
-        for (const [key, value] of Object.entries(attributes())) element.style.setProperty(key === 'textAlign' ? 'text-align' : key, value);
+        for (const [key, value] of Object.entries(attributes())) element.style.setProperty(key === 'textAlign' ? 'text-align' : key, value || '');
     };
     const load = () => {
         const level = Number(field('level').value);
@@ -63,7 +80,9 @@ export function installHeadingStyleDialog(root, editor, button) {
         field('font-family').value = existing['font-family'] || 'Arial';
         if (!field('font-family').value) field('font-family').value = 'Arial';
         field('font-size').value = parseFloat(existing['font-size']) || [0, 28, 24, 20, 16][level];
-        field('color').value = /^#[0-9a-f]{6}$/i.test(existing.color || '') ? existing.color : '#29231e';
+        field('color').value = paletteValue(existing.color) || '#000000';
+        if (!field('color').value) field('color').value = '#000000';
+        field('background-color').value = paletteValue(existing['background-color']);
         field('textAlign').value = existing.textAlign || 'left';
         field('line-height').value = existing['line-height'] || '1.3';
         field('margin-top').value = parseFloat(existing['margin-top']) || 18;
@@ -81,6 +100,9 @@ export function installHeadingStyleDialog(root, editor, button) {
         dialog.showModal();
     });
     field('level').addEventListener('change', load);
+    const updateApplyLabel = () => { dialog.querySelector('[data-apply]').textContent = field('all').checked ? 'Apply to all matching headings' : 'Apply to selected heading'; };
+    field('all').addEventListener('change', updateApplyLabel);
+    updateApplyLabel();
     dialog.addEventListener('input', preview);
     dialog.querySelector('[data-cancel]').addEventListener('click', () => dialog.close());
     dialog.querySelector('[data-apply]').addEventListener('click', () => {
@@ -102,7 +124,7 @@ export function installHeadingStyleDialog(root, editor, button) {
             node.descendants((child, offset) => {
                 if (!child.isText) return;
                 for (const mark of child.marks) {
-                    if (['textStyle', 'bold', 'italic', 'underline'].includes(mark.type.name)) transaction.removeMark(pos + 1 + offset, pos + 1 + offset + child.nodeSize, mark.type);
+                    if (['textStyle', 'bold', 'italic', 'underline', 'highlight'].includes(mark.type.name)) transaction.removeMark(pos + 1 + offset, pos + 1 + offset + child.nodeSize, mark.type);
                 }
             });
         }

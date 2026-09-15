@@ -15,6 +15,8 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'featured_image_title' => ['nullable', 'string', 'max:255'],
+            'featured_image_caption' => ['nullable', 'string', 'max:255'],
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('posts', 'slug')],
             'blog_category_id' => ['nullable', 'integer', 'exists:blog_categories,id'],

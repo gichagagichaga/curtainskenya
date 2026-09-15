@@ -24,6 +24,9 @@ class UpdateClientRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'image_alt' => ['nullable', 'string', 'max:255'],
+            'image_title' => ['nullable', 'string', 'max:255'],
+            'image_caption' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

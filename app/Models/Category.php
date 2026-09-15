@@ -11,7 +11,7 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+    protected $fillable = ['image_alt', 'image_title', 'image_caption',
         'name',
         'parent_id',
         'slug',

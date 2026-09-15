@@ -15,7 +15,7 @@
                 <div x-data="{ active: 0, total: {{ $service->images->count() }}, timer: null, init() { this.timer = setInterval(() => this.next(), 4500) }, next() { this.active = (this.active + 1) % this.total }, previous() { this.active = (this.active - 1 + this.total) % this.total }, pause() { clearInterval(this.timer) }, resume() { this.pause(); this.timer = setInterval(() => this.next(), 4500) } }" x-on:mouseenter="pause()" x-on:mouseleave="resume()" class="relative overflow-hidden rounded-2xl shadow-lg">
                     <div class="h-72 sm:h-96">
                         @foreach($service->images as $index => $image)
-                            <img x-cloak x-show="active === {{ $index }}" x-transition.opacity src="{{ asset('storage/'.$image->image_path) }}" alt="{{ $service->name }} — image {{ $index + 1 }}" class="h-full w-full object-cover">
+                            <img title="{{ $image?->image_title }}" x-cloak x-show="active === {{ $index }}" x-transition.opacity src="{{ asset('storage/'.$image->image_path) }}" alt="{{ $image->alt_text ?: $service->name }}" class="h-full w-full object-cover">@if($image?->image_caption)<span style="position:absolute;bottom:0;left:0;right:0;z-index:2" x-show="active === {{ $index }}" class="block bg-white/90 px-2 py-1 text-xs text-zinc-700">{{ $image?->image_caption }}</span>@endif
                         @endforeach
                     </div>
                     @if($service->images->count() > 1)

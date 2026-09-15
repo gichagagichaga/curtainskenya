@@ -24,6 +24,15 @@ class StoreServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'existing_image_metadata' => ['nullable', 'array'],
+            'existing_image_metadata.*' => ['array:alt_text,image_title,image_caption'],
+            'existing_image_metadata.*.*' => ['nullable', 'string', 'max:255'],
+            'image_titles' => ['nullable', 'array'],
+            'image_titles.*' => ['nullable', 'string', 'max:255'],
+            'image_captions' => ['nullable', 'array'],
+            'image_captions.*' => ['nullable', 'string', 'max:255'],
+            'alt_texts' => ['nullable', 'array'],
+            'alt_texts.*' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'description' => ['required', 'string', 'max:5000'],
