@@ -40,7 +40,7 @@
         Measured for your space <span class="mx-2 text-white/40">•</span> Delivery and fitting across Kenya
     </div>
 
-    <header x-data="{ mobileMenuOpen: false }" class="sticky top-0 z-30 border-b border-black/8 bg-white/95 backdrop-blur">
+    <header x-data="{ mobileMenuOpen: false }" @close-navigation.window="mobileMenuOpen = false" @keydown.escape.window="mobileMenuOpen = false" class="sticky top-0 z-30 border-b border-black/8 bg-white/95 backdrop-blur">
         <div class="ck-container flex min-h-20 items-center justify-between gap-5">
             <button type="button" @click="mobileMenuOpen = ! mobileMenuOpen" :aria-expanded="mobileMenuOpen.toString()" aria-controls="mobile-navigation" aria-label="Open navigation" class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-black/10 text-ck-dark lg:hidden">
                 <svg x-show="! mobileMenuOpen" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -52,9 +52,9 @@
             </a>
 
             <nav class="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
-                <a href="{{ route('home').'#categories' }}" class="ck-nav-link ck-section-nav-link" data-section-link="categories">Collections</a>
+                @include('partials.collections-menu', ['mobile' => false])
                 <a href="{{ route('home').'#featured' }}" class="ck-nav-link ck-section-nav-link" data-section-link="featured">New arrivals</a>
-                <div class="relative flex items-center" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                <div class="relative flex items-center" x-data="{ open: false }" @close-navigation.window="open = false" @keydown.escape.window="open = false" @click.outside="open = false" @mouseenter="open = true" @mouseleave="open = false">
                     <a href="{{ route('home').'#services' }}" class="ck-nav-link ck-section-nav-link" data-section-link="services">Our services</a>
                     <button type="button" @click="open = ! open" class="ml-1 rounded p-1 text-ck-dark transition hover:bg-ck-cream" :aria-expanded="open.toString()" aria-label="Show services menu"><span class="text-base leading-none" aria-hidden="true">⌄</span></button>
                     <div x-cloak x-show="open" x-transition class="absolute left-0 top-full z-50 mt-3 w-72 rounded-xl border border-black/10 bg-white py-2 shadow-xl">
@@ -109,7 +109,7 @@
         <nav id="mobile-navigation" x-cloak x-show="mobileMenuOpen" x-transition class="border-t border-black/6 bg-white px-6 py-4 lg:hidden" aria-label="Mobile navigation">
             <div class="grid gap-1 text-sm font-medium">
                 <a href="{{ route('shop.index') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Shop</a>
-                <a href="{{ route('home').'#categories' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Collections</a>
+                @include('partials.collections-menu', ['mobile' => true])
                 <a href="{{ route('home').'#featured' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">New arrivals</a>
                 <a href="{{ route('home').'#services' }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Our services</a>
                 <a href="{{ route('story') }}" class="rounded-lg px-3 py-3 hover:bg-ck-cream">Our story</a>

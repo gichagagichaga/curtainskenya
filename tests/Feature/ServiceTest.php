@@ -23,7 +23,7 @@ test('active services have a public quotation page', function () {
 
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('Services for every finishing touch.')
+        ->assertSee('Our Services')
         ->assertSee('Custom Curtain Making');
 });
 

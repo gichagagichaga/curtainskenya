@@ -77,6 +77,12 @@
             <p class="max-w-xs text-sm leading-6 text-ck-brown">Light control, privacy, comfort and colour—organised into useful collections.</p>
         </div>
 
+        <div data-category-slider role="region" aria-label="Shop by category">
+        <div class="mt-4 flex justify-end gap-2">
+            <button type="button" data-category-previous aria-label="Previous categories" class="rounded border px-3 py-2">←</button>
+            <button type="button" data-category-pause aria-pressed="false" class="rounded border px-3 py-2 text-sm">Pause</button>
+            <button type="button" data-category-next aria-label="Next categories" class="rounded border px-3 py-2">→</button>
+        </div>
         <div data-home-category-grid class="home-mobile-category-grid mt-7 grid grid-cols-3 gap-2 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             @foreach ($categories as $category)
                 <a href="{{ route('shop.category', $category) }}" class="ck-category-card home-compact-category-card group">
@@ -92,6 +98,7 @@
                 </a>
             @endforeach
         </div>
+        </div>
     </div>
 </section>
 
@@ -99,7 +106,7 @@
     <div class="ck-container">
         <div class="text-center">
             <p class="ck-eyebrow">Popular choices</p>
-            <h2 class="ck-heading mt-3 font-serif">Solutions customers return to.</h2>
+            <h2 class="ck-heading mt-3 font-serif">Best selling</h2>
         </div>
 
         <div data-home-featured-grid class="home-mobile-featured-grid mt-7 grid grid-cols-3 gap-x-2 gap-y-5 sm:mt-10 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-9 lg:grid-cols-4">
@@ -133,7 +140,7 @@
 <section id="services" class="ck-section scroll-mt-28">
     <div class="ck-container">
         <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div><p class="ck-eyebrow">From idea to installation</p><h2 class="ck-heading mt-3 font-serif">Help where your project needs it.</h2></div>
+            <div><p class="ck-eyebrow">From idea to installation</p><h2 class="ck-heading mt-3 font-serif">Our Services</h2></div>
             <p class="max-w-xs text-sm leading-6 text-ck-brown">Book measuring, request a fabric consultation or arrange professional fitting.</p>
         </div>
         @if($services->isNotEmpty())

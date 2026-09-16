@@ -46,6 +46,11 @@ test('renders active categories and featured products on the home page', functio
 
     $this->get(route('home'))
         ->assertSee('data-home-category-grid', false)
+        ->assertSee('data-category-slider', false)
+        ->assertSee('Next categories')
+        ->assertSee('Show collections menu')
+        ->assertSee('Best selling')
+        ->assertSee('Our Services')
         ->assertSee('data-home-featured-grid', false)
         ->assertSee('data-home-featured-card', false)
         ->assertSee('grid-cols-3', false)
