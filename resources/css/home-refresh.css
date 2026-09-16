@@ -16,7 +16,7 @@ body:has(#categories) main article > a[href*="/projects/"]:has(> img) { height: 
     position: static; display: block; width: 100%; height: auto; aspect-ratio: 1;
     border-radius: 50%; border: 1px solid #aac7e7; object-fit: cover;
 }
-[data-category-slider] .home-compact-category-card > .absolute { display: none; }
+[data-category-slider] .home-compact-category-card > div.absolute { display: none; }
 [data-category-slider] .home-compact-category-card > .relative { height: auto; padding: .6rem 0 0; color: #26221d; text-align: center; }
 [data-category-slider] .home-compact-category-card > .relative > span { display: none; }
 [data-category-slider] .home-compact-category-card > .relative > span:nth-child(2) {
